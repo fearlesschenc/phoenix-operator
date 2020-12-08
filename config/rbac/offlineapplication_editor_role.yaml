@@ -1,0 +1,24 @@
+# permissions for end users to edit offlineapplications.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: offlineapplication-editor-role
+rules:
+- apiGroups:
+  - workload.phoenix.fearlesschenc.com
+  resources:
+  - offlineapplications
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - workload.phoenix.fearlesschenc.com
+  resources:
+  - offlineapplications/status
+  verbs:
+  - get

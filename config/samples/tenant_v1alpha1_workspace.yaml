@@ -1,0 +1,7 @@
+apiVersion: tenant.phoenix.fearlesschenc.com/v1alpha1
+kind: Workspace
+metadata:
+  name: workspace-sample
+spec:
+  # Add fields here
+  foo: bar

@@ -1,0 +1,7 @@
+apiVersion: workload.phoenix.fearlesschenc.com/v1alpha1
+kind: OfflineApplication
+metadata:
+  name: offlineapplication-sample
+spec:
+  # Add fields here
+  foo: bar

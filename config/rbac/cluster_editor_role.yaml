@@ -1,0 +1,24 @@
+# permissions for end users to edit clusters.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-editor-role
+rules:
+- apiGroups:
+  - tenant.phoenix.fearlesschenc.com
+  resources:
+  - clusters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - tenant.phoenix.fearlesschenc.com
+  resources:
+  - clusters/status
+  verbs:
+  - get
