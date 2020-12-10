@@ -18,15 +18,18 @@ package controllers
 
 import (
 	"context"
-
 	"github.com/go-logr/logr"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"reflect"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	tenantv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/tenant/v1alpha1"
 )
+
+const ClusterLabel = "cluster.phoenix.fearlesschenc.com"
+const clusterFinalizer = "finalizer.tenant.phoenix.fearlesschenc.com"
 
 // ClusterReconciler reconciles a Cluster object
 type ClusterReconciler struct {
@@ -35,49 +38,17 @@ type ClusterReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-func (r *ClusterReconciler) reconcileWorkspace(ctx context.Context, templates []tenantv1alpha1.WorkspaceTemplate) error {
-	workspaces := &tenantv1alpha1.WorkspaceList{}
-	if err := r.List(ctx, workspaces); err != nil {
-		return err
-	}
-
-	workspaceToPrune := make(map[int]bool)
-	for i := 0; i < len(workspaces.Items); {
-		workspaceToPrune[i] = true
-	}
-
-templateLoop:
-	for _, template := range templates {
-		for listIndex, workspace := range workspaces.Items {
-			if workspace.Name == template.Name {
-				workspaceToPrune[listIndex] = false
-
-				if reflect.DeepEqual(workspace.Spec, template.Template) {
-					continue templateLoop
-				}
-
-				// update workspace
-				workspace.Spec = template.Template
-				if err := r.Update(ctx, &workspace); err != nil {
-					return err
-				}
-
-				continue templateLoop
+func (r *ClusterReconciler) reconcileDeletion(ctx context.Context, cluster *tenantv1alpha1.Cluster) error {
+	if !cluster.ObjectMeta.DeletionTimestamp.IsZero() {
+		if controllerutil.ContainsFinalizer(cluster, clusterFinalizer) {
+			if err := r.removeClusterProvision(ctx, cluster); err != nil {
+				return err
 			}
-		}
 
-		workspace := &tenantv1alpha1.Workspace{}
-		workspace.Spec = template.Template
-		// create workspace
-		if err := r.Create(ctx, workspace); err != nil {
-			return err
-		}
-	}
+			// TODO: remove network policy
 
-	// prune workspace
-	for listIndex, prune := range workspaceToPrune {
-		if prune {
-			if err := r.Delete(ctx, &workspaces.Items[listIndex]); err != nil {
+			controllerutil.RemoveFinalizer(cluster, clusterFinalizer)
+			if err := r.Update(ctx, cluster); err != nil {
 				return err
 			}
 		}
@@ -98,8 +69,23 @@ func (r *ClusterReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	if err := r.reconcileWorkspace(ctx, cluster.Spec.Workspace); err != nil {
-		log.Error(err, "reconcile workspace error")
+	if !controllerutil.ContainsFinalizer(cluster, clusterFinalizer) {
+		controllerutil.AddFinalizer(cluster, clusterFinalizer)
+		if err := r.Update(ctx, cluster); err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
+	if err := r.reconcileDeletion(ctx, cluster); err != nil {
+		log.Info("handle deletion")
+		return ctrl.Result{}, err
+	}
+
+	if err := r.reconcileProvision(ctx, cluster); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	if err := r.reconcileNetwork(ctx, cluster); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -109,5 +95,6 @@ func (r *ClusterReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 func (r *ClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&tenantv1alpha1.Cluster{}).
+		Owns(&corev1.Node{}).
 		Complete(r)
 }

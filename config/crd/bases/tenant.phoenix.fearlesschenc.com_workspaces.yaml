@@ -14,7 +14,7 @@ spec:
     listKind: WorkspaceList
     plural: workspaces
     singular: workspace
-  scope: Namespaced
+  scope: Cluster
   subresources:
     status: {}
   validation:

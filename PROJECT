@@ -5,9 +5,6 @@ projectName: phoenix-operator
 repo: github.com/fearlesschenc/phoenix-operator
 resources:
 - group: tenant
-  kind: Workspace
-  version: v1alpha1
-- group: tenant
   kind: Cluster
   version: v1alpha1
 - group: workload

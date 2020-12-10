@@ -52,15 +52,13 @@ func (r *Reconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, fmt.Errorf("failed to list files, error: %w", err)
 	}
 
-	if isClusterRepo(files) {
-		return r.updateCluster(ctx, repo, tmpDir)
-	} else if isApplicationRepo(files) {
-		return r.updateApplication(ctx, repo, tmpDir)
+	if !isApplicationRepo(files) {
+		// ignore invalid
+		log.Info("unknown repo type")
+		return ctrl.Result{}, nil
 	}
 
-	// ignore invalid
-	log.Info("unknown repo type")
-	return ctrl.Result{}, nil
+	return r.updateApplication(ctx, repo, tmpDir)
 }
 
 func (r *Reconciler) fetchArtifact(ctx context.Context, repo sourcev1beta1.GitRepository, dir string) (string, error) {

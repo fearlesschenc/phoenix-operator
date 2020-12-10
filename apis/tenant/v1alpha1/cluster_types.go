@@ -17,30 +17,44 @@ limitations under the License.
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+const (
+	ClusterReady           = "ClusterReady"
+	ClusterNetworkIsolated = "ClusterNetworkIsolated"
+	ClusterProvisioned     = "ClusterProvisioned"
+)
+
 // ClusterSpec defines the desired state of Cluster
 type ClusterSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// defines the registered workspaces, controller will use this definition
-	// to reconcile the corresponding workspace, Add/Update/Delete
 	// +optional
-	Workspace []WorkspaceTemplate `json:"workspace"`
+	NetworkIsolationEnabled *bool `json:"networkIsolation,omitempty"`
 
-	// defines the registered application git repo
-	//Applications []v1beta1.GitRepositorySpec `json:"applications"`
+	// preferred to schedule workload to this hosts, otherwise
+	// +optional
+	Nodes []string `json:"hosts,omitempty" yaml:"nodes,omitempty"`
 }
 
 // ClusterStatus defines the observed state of Cluster
 type ClusterStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	//WorkspaceRegistered []string `json:"workspaceRegistered,omitempty"`
+	Condition []metav1.Condition `json:"condition"`
+
+	// +optional
+	OccupiedNodes []corev1.LocalObjectReference `json:"occupiedNodes"`
+
+	//
+	NetworkIsolated bool `json:"networkIsolated"`
 }
 
 // +kubebuilder:object:root=true
