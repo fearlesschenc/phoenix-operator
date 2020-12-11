@@ -18,17 +18,19 @@ package main
 
 import (
 	"flag"
+	"os"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	"github.com/fearlesschenc/phoenix-operator/controllers/tenant/cluster"
+
 	tenantv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/tenant/v1alpha1"
 	workloadv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/workload/v1alpha1"
-	tenantcontroller "github.com/fearlesschenc/phoenix-operator/controllers/tenant"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -71,7 +73,7 @@ func main() {
 	// TODO
 	// Setup with repo controller
 
-	if err = (&tenantcontroller.ClusterReconciler{
+	if err = (&cluster.Reconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Cluster"),
 		Scheme: mgr.GetScheme(),
@@ -101,6 +103,10 @@ func main() {
 	// hookServer.Register("/mutate-tenant-v1alpha1-workspace", &webhook.Admission{Handler: &tenantv1alpha1.WorkspaceMutator{Client: mgr.GetClient()}})
 	// hookServer.Register("/validate-tenant-v1alpha1-workspace", &webhook.Admission{Handler: &webhook2.WorkspaceValidator{Client: mgr.GetClient()}})
 
+	if err = (&tenantv1alpha1.Cluster{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "Cluster")
+		os.Exit(1)
+	}
 	// +kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")

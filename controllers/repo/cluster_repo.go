@@ -7,7 +7,7 @@ package repo
 //
 //func isClusterRepo(rootFiles []os.FileInfo) bool {
 //	for _, file := range rootFiles {
-//		if file.Name() == ClusterConfiguration {
+//		if file.NodeName() == ClusterConfiguration {
 //			return true
 //		}
 //	}
@@ -16,18 +16,18 @@ package repo
 //}
 
 //func (r *Reconciler) updateCluster(ctx context.Context, repo *sourcev1beta1.GitRepository, artifactDir string) (ctrl.Result, error) {
-//	log := r.Log.WithValues("type", "cluster", "name", repo.Name)
+//	log := r.Log.WithValues("type", "cluster", "name", repo.NodeName)
 
 //created := true
 //cluster := &tenantv1alpha1.Cluster{}
-//if err := r.Get(ctx, types.NamespacedName{Name: DefaultClusterName}, cluster); err != nil {
+//if err := r.Get(ctx, types.NamespacedName{NodeName: DefaultClusterName}, cluster); err != nil {
 //	if !errors.IsNotFound(err) {
 //		return ctrl.Result{}, err
 //	}
 
 //	created = false
 //	// init cluster
-//	cluster.Name = DefaultClusterName
+//	cluster.NodeName = DefaultClusterName
 //}
 
 //// map cluster repo fact to cluster spec
@@ -41,7 +41,7 @@ package repo
 //cluster.Spec.Workspaces = []tenantv1alpha1.WorkspaceTemplate{}
 //for _, workspace := range clusterConfig.Workspaces {
 //	cluster.Spec.Workspaces = append(cluster.Spec.Workspaces, tenantv1alpha1.WorkspaceTemplate{
-//		ObjectMeta: metav1.ObjectMeta{Name: workspace.Name},
+//		ObjectMeta: metav1.ObjectMeta{NodeName: workspace.NodeName},
 //		Spec: tenantv1alpha1.WorkspaceSpec{
 //			NetworkIsolationEnabled: workspace.NetworkIsolationEnabled,
 //			Hosts:                   workspace.Hosts,

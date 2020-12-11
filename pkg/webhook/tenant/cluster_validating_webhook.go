@@ -1,3 +1,0 @@
-package tenant
-
-// TODO: singleton

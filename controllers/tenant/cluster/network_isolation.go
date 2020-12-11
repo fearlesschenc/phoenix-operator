@@ -1,4 +1,4 @@
-package controllers
+package cluster
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func clusterNetworkIsolationEnabled(cluster *tenantv1alpha1.Cluster) bool {
+func networkIsolationEnabled(cluster *tenantv1alpha1.Cluster) bool {
 	if cluster.Spec.NetworkIsolationEnabled == nil {
 		return false
 	}
@@ -16,7 +16,7 @@ func clusterNetworkIsolationEnabled(cluster *tenantv1alpha1.Cluster) bool {
 	return *cluster.Spec.NetworkIsolationEnabled
 }
 
-func (r *ClusterReconciler) removeNetworkPolicyIfExists(ctx context.Context, cluster *tenantv1alpha1.Cluster) error {
+func (r *Reconciler) removeNetworkPolicyIfExists(ctx context.Context, cluster *tenantv1alpha1.Cluster) error {
 	if !cluster.Status.NetworkIsolated {
 		return nil
 	}
@@ -38,10 +38,11 @@ func (r *ClusterReconciler) removeNetworkPolicyIfExists(ctx context.Context, clu
 	return nil
 }
 
-func (r *ClusterReconciler) createNetworkPolicyForCluster(cluster *tenantv1alpha1.Cluster) *v1.NetworkPolicy {
+func (r *Reconciler) createNetworkPolicyForCluster(cluster *tenantv1alpha1.Cluster) *v1.NetworkPolicy {
 	return &v1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: cluster.Name,
+			Namespace: metav1.NamespaceDefault,
+			Name:      cluster.Name,
 		},
 		Spec: v1.NetworkPolicySpec{
 			PodSelector: metav1.LabelSelector{
@@ -69,8 +70,8 @@ func (r *ClusterReconciler) createNetworkPolicyForCluster(cluster *tenantv1alpha
 	}
 }
 
-func (r *ClusterReconciler) reconcileNetwork(ctx context.Context, cluster *tenantv1alpha1.Cluster) error {
-	if !clusterNetworkIsolationEnabled(cluster) {
+func (r *Reconciler) reconcileNetwork(ctx context.Context, cluster *tenantv1alpha1.Cluster) error {
+	if !networkIsolationEnabled(cluster) {
 		return r.removeNetworkPolicyIfExists(ctx, cluster)
 	}
 

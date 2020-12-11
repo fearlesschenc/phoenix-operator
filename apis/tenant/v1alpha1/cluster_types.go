@@ -17,7 +17,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -30,6 +29,23 @@ const (
 	ClusterProvisioned     = "ClusterProvisioned"
 )
 
+const ClusterLabel = "cluster.phoenix.fearlesschenc.com"
+
+type OccupyPolicy string
+
+const (
+	None      OccupyPolicy = "None"
+	Exclusive OccupyPolicy = "exclusive"
+)
+
+type NodeOccupy struct {
+	// +required
+	NodeName string `json:"host"`
+
+	// +optional
+	Policy OccupyPolicy `json:"policy"`
+}
+
 // ClusterSpec defines the desired state of Cluster
 type ClusterSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
@@ -40,26 +56,29 @@ type ClusterSpec struct {
 
 	// preferred to schedule workload to this hosts, otherwise
 	// +optional
-	Nodes []string `json:"hosts,omitempty" yaml:"nodes,omitempty"`
+	NodeOccupies []NodeOccupy `json:"nodeOccupies,omitempty" yaml:"nodeOccupies,omitempty"`
 }
 
 // ClusterStatus defines the observed state of Cluster
 type ClusterStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	//WorkspaceRegistered []string `json:"workspaceRegistered,omitempty"`
-	Condition []metav1.Condition `json:"condition"`
+	// +optional
+	//Condition []metav1.Condition `json:"condition"`
 
 	// +optional
-	OccupiedNodes []corev1.LocalObjectReference `json:"occupiedNodes"`
+	NodeOccupies []NodeOccupy `json:"occupiedNodes"`
 
-	//
+	// +optional
 	NetworkIsolated bool `json:"networkIsolated"`
 }
 
+// TODO: printcolumn not working, value empty
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster
+// +kubebuilder:printcolumn:name="Isolated",type=boolean,JSONPath=".status.NetworkIsolated"
+// +kubebuilder:printcolumn:name="NodeOccupies",type=string,JSONPath=`.status.NodeOccupies[*].NodeName`
 
 // Cluster is the Schema for the clusters API
 type Cluster struct {
