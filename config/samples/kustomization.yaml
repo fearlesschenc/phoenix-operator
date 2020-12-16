@@ -1,6 +1,4 @@
 ## Append samples you want in your CSV to this file as resources ##
 resources:
-- tenant_v1alpha1_workspace.yaml
-- tenant_v1alpha1_cluster.yaml
-- workload_v1alpha1_offlineapplication.yaml
+- tenant_v1alpha1_workspaceclaim.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples
