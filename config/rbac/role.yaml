@@ -9,7 +9,7 @@ rules:
 - apiGroups:
   - tenant.phoenix.fearlesschenc.com
   resources:
-  - clusters
+  - workspaceclaims
   verbs:
   - create
   - delete
@@ -21,7 +21,7 @@ rules:
 - apiGroups:
   - tenant.phoenix.fearlesschenc.com
   resources:
-  - clusters/status
+  - workspaceclaims/status
   verbs:
   - get
   - patch

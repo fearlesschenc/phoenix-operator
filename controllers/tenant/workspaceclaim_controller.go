@@ -56,7 +56,7 @@ func (r *WorkspaceClaimReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		adaptor.EnsureFinalizerAppended,
 		adaptor.UpdateWorkspaceClaimStatus,
 		adaptor.EnsureWorkspaceClaimDeletionProcessed,
-		adaptor.EnsureWorkspaceClaimDeletionProcessed,
+		adaptor.EnsureWorkspaceClaimPossessionProcessed,
 	}
 	for _, operation := range operations {
 		result, err := operation()
@@ -83,9 +83,6 @@ func (r *WorkspaceClaimReconciler) requeueOnErr(err error) (ctrl.Result, error) 
 func (r *WorkspaceClaimReconciler) requeueAfter(duration time.Duration, err error) (ctrl.Result, error) {
 	return ctrl.Result{RequeueAfter: duration}, err
 }
-
-//func (r *WorkspaceClaimReconciler) mapNode(object handler.MapObject) []ctrl.Request {
-//}
 
 func (r *WorkspaceClaimReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).

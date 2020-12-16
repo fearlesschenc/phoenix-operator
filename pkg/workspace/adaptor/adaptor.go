@@ -88,7 +88,7 @@ func (adaptor *Adaptor) EnsureWorkspaceClaimDeletionProcessed() (util.OperationR
 	return util.StopProcessing()
 }
 
-func (adaptor *Adaptor) EnsureWorkspaceClaimPossession() (util.OperationResult, error) {
+func (adaptor *Adaptor) EnsureWorkspaceClaimPossessionProcessed() (util.OperationResult, error) {
 	nodeList := &v1.NodeList{}
 	if err := adaptor.List(adaptor.ctx, nodeList); err != nil {
 		return util.RequeueWithError(err)

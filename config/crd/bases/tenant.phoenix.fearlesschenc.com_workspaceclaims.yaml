@@ -6,27 +6,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.3.0
   creationTimestamp: null
-  name: clusters.tenant.phoenix.fearlesschenc.com
+  name: workspaceclaims.tenant.phoenix.fearlesschenc.com
 spec:
-  additionalPrinterColumns:
-  - JSONPath: .status.NetworkIsolated
-    name: Isolated
-    type: boolean
-  - JSONPath: .status.OccupiedNodes[*].Name
-    name: Nodes
-    type: string
   group: tenant.phoenix.fearlesschenc.com
   names:
-    kind: Cluster
-    listKind: ClusterList
-    plural: clusters
-    singular: cluster
-  scope: Cluster
+    kind: WorkspaceClaim
+    listKind: WorkspaceClaimList
+    plural: workspaceclaims
+    singular: workspaceclaim
+  scope: Namespaced
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
-      description: Cluster is the Schema for the clusters API
+      description: WorkspaceClaim is the Schema for the workspaceclaims API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -41,32 +34,37 @@ spec:
         metadata:
           type: object
         spec:
-          description: ClusterSpec defines the desired state of Cluster
+          description: WorkspaceClaimSpec defines the desired state of WorkspaceClaim
           properties:
-            networkIsolation:
-              type: boolean
-            nodes:
-              description: preferred to schedule workload to this hosts, otherwise
+            node:
               items:
                 type: string
               type: array
+            workspaceRef:
+              description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                Important: Run "make" to regenerate code after modifying this file'
+              properties:
+                name:
+                  type: string
+              required:
+              - name
+              type: object
+          required:
+          - node
+          - workspaceRef
           type: object
         status:
-          description: ClusterStatus defines the observed state of Cluster
+          description: WorkspaceClaimStatus defines the observed state of WorkspaceClaim
           properties:
-            networkIsolated:
-              type: boolean
-            occupiedNodes:
+            node:
+              description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+                of cluster Important: Run "make" to regenerate code after modifying
+                this file'
               items:
-                description: LocalObjectReference contains enough information to let
-                  you locate the referenced object inside the same namespace.
-                properties:
-                  name:
-                    description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                      TODO: Add other useful fields. apiVersion, kind, uid?'
-                    type: string
-                type: object
+                type: string
               type: array
+          required:
+          - node
           type: object
       type: object
   version: v1alpha1

@@ -5,10 +5,7 @@ projectName: phoenix-operator
 repo: github.com/fearlesschenc/phoenix-operator
 resources:
 - group: tenant
-  kind: Cluster
-  version: v1alpha1
-- group: workload
-  kind: OfflineApplication
+  kind: WorkspaceClaim
   version: v1alpha1
 version: 3-alpha
 plugins:
