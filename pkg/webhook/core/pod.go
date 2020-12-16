@@ -48,6 +48,7 @@ func (a *PodAnnotator) MutatePod(pod *corev1.Pod, workspace string) {
 	})
 }
 
+// +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=fail,groups="",versions=v1,resources=pods,verbs=create;update,name=mpod.kubesphere.io
 
 func (a *PodAnnotator) Handle(ctx context.Context, req admission.Request) admission.Response {
