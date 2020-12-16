@@ -43,7 +43,7 @@ package repo
 //	cluster.Spec.Workspaces = append(cluster.Spec.Workspaces, tenantv1alpha1.WorkspaceTemplate{
 //		ObjectMeta: metav1.ObjectMeta{NodeName: workspace.NodeName},
 //		Spec: tenantv1alpha1.WorkspaceSpec{
-//			NetworkIsolationEnabled: workspace.NetworkIsolationEnabled,
+//			NetworkIsolation: workspace.NetworkIsolation,
 //			Hosts:                   workspace.Hosts,
 //		},
 //	})

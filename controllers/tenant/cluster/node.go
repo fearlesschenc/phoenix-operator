@@ -8,7 +8,7 @@ import (
 )
 
 func (r *Reconciler) getNodeOccupyStatus(cluster *tenantv1alpha1.Cluster, name string) *node.OccupyStatus {
-	for _, occupy := range cluster.Status.NodeOccupies {
+	for _, occupy := range cluster.Status.NodeOccupied {
 		if occupy.NodeName == name {
 			return &node.OccupyStatus{
 				Occupied: true,
@@ -69,7 +69,7 @@ func (r *Reconciler) reconcileNodeOccupies(ctx context.Context, cluster *tenantv
 		}
 	}
 
-	cluster.Status.NodeOccupies = cluster.Spec.NodeOccupies
+	cluster.Status.NodeOccupied = cluster.Spec.NodeOccupies
 	if err := r.Status().Update(ctx, cluster); err != nil {
 		return err
 	}

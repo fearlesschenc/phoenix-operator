@@ -1,0 +1,24 @@
+# permissions for end users to edit workspaceclaims.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: workspaceclaim-editor-role
+rules:
+- apiGroups:
+  - tenant.phoenix.fearlesschenc.com
+  resources:
+  - workspaceclaims
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - tenant.phoenix.fearlesschenc.com
+  resources:
+  - workspaceclaims/status
+  verbs:
+  - get

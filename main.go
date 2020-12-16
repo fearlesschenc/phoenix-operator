@@ -27,10 +27,9 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	"github.com/fearlesschenc/phoenix-operator/controllers/tenant/cluster"
-
 	tenantv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/tenant/v1alpha1"
 	workloadv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/workload/v1alpha1"
+	tenantcontroller "github.com/fearlesschenc/phoenix-operator/controllers/tenant"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -73,14 +72,14 @@ func main() {
 	// TODO
 	// Setup with repo controller
 
-	if err = (&cluster.Reconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Cluster"),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Cluster")
-		os.Exit(1)
-	}
+	//if err = (&cluster.Reconciler{
+	//	Client: mgr.GetClient(),
+	//	Log:    ctrl.Log.WithName("controllers").WithName("Cluster"),
+	//	Scheme: mgr.GetScheme(),
+	//}).SetupWithManager(mgr); err != nil {
+	//	setupLog.Error(err, "unable to create controller", "controller", "Cluster")
+	//	os.Exit(1)
+	//}
 	//if err = (&workloadcontroller.ApplicationReconciler{
 	//	Client: mgr.GetClient(),
 	//	Log:    ctrl.Log.WithName("controllers").WithName("Application"),
@@ -103,8 +102,16 @@ func main() {
 	// hookServer.Register("/mutate-tenant-v1alpha1-workspace", &webhook.Admission{Handler: &tenantv1alpha1.WorkspaceMutator{Client: mgr.GetClient()}})
 	// hookServer.Register("/validate-tenant-v1alpha1-workspace", &webhook.Admission{Handler: &webhook2.WorkspaceValidator{Client: mgr.GetClient()}})
 
-	if err = (&tenantv1alpha1.Cluster{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "Cluster")
+	//if err = (&tenantv1alpha1.Cluster{}).SetupWebhookWithManager(mgr); err != nil {
+	//	setupLog.Error(err, "unable to create webhook", "webhook", "Cluster")
+	//	os.Exit(1)
+	//}
+	if err = (&tenantcontroller.WorkspaceClaimReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("WorkspaceClaim"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "WorkspaceClaim")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder

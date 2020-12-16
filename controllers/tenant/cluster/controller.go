@@ -18,15 +18,11 @@ package cluster
 
 import (
 	"context"
+	tenantv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/tenant/v1alpha1"
 	"github.com/go-logr/logr"
-	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-
-	tenantv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/tenant/v1alpha1"
 )
 
 const clusterFinalizer = "finalizer.tenant.phoenix.fearlesschenc.com"
@@ -38,48 +34,47 @@ type Reconciler struct {
 	Scheme *runtime.Scheme
 }
 
-func (r *Reconciler) reconcileDeletion(ctx context.Context, cluster *tenantv1alpha1.Cluster) error {
-	if !cluster.ObjectMeta.DeletionTimestamp.IsZero() {
-		if controllerutil.ContainsFinalizer(cluster, clusterFinalizer) {
-			if err := r.removeClusterProvision(ctx, cluster); err != nil {
-				return err
-			}
+//func (r *Reconciler) reconcileDeletion(ctx context.Context, cluster *tenantv1alpha1.Cluster) error {
+//	if !cluster.ObjectMeta.DeletionTimestamp.IsZero() {
+//		if controllerutil.ContainsFinalizer(cluster, clusterFinalizer) {
+//			controllerutil.RemoveFinalizer(cluster, clusterFinalizer)
+//			if err := r.Update(ctx, cluster); err != nil {
+//				return err
+//			}
+//		}
+//	}
 
-			// TODO: remove network policy
-
-			controllerutil.RemoveFinalizer(cluster, clusterFinalizer)
-			if err := r.Update(ctx, cluster); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
+//	return nil
+//}
 
 // +kubebuilder:rbac:groups=tenant.phoenix.fearlesschenc.com,resources=clusters,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=tenant.phoenix.fearlesschenc.com,resources=clusters/status,verbs=get;update;patch
 
 func (r *Reconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
-	log := r.Log.WithValues("cluster", req.NamespacedName)
+	_ = r.Log.WithValues("cluster", req.NamespacedName)
 
 	cluster := &tenantv1alpha1.Cluster{}
 	if err := r.Get(ctx, req.NamespacedName, cluster); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	if !controllerutil.ContainsFinalizer(cluster, clusterFinalizer) {
-		controllerutil.AddFinalizer(cluster, clusterFinalizer)
-		if err := r.Update(ctx, cluster); err != nil {
-			return ctrl.Result{}, err
-		}
-	}
+	//if !controllerutil.ContainsFinalizer(cluster, clusterFinalizer) {
+	//	controllerutil.AddFinalizer(cluster, clusterFinalizer)
+	//	if err := r.Update(ctx, cluster); err != nil {
+	//		return ctrl.Result{}, err
+	//	}
+	//}
 
-	if err := r.reconcileDeletion(ctx, cluster); err != nil {
-		log.Info("handle deletion")
-		return ctrl.Result{}, err
-	}
+	//if err := r.reconcileDeletion(ctx, cluster); err != nil {
+	//	log.Info("handle deletion")
+	//	return ctrl.Result{}, err
+	//}
+
+	// TODO
+	// updateClusterStatus
+	// * check Application Status
+	// * check Node status
 
 	if err := r.reconcileNodeOccupies(ctx, cluster); err != nil {
 		return ctrl.Result{}, err
@@ -89,13 +84,15 @@ func (r *Reconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
+	if err := r.Status().Update(ctx, cluster); err != nil {
+		return ctrl.Result{}, err
+	}
+
 	return ctrl.Result{}, nil
 }
 
 func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&tenantv1alpha1.Cluster{}).
-		Owns(&corev1.Node{}).
-		Owns(&v1.NetworkPolicy{}).
 		Complete(r)
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"github.com/fearlesschenc/phoenix-operator/apis/workload/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -51,34 +52,39 @@ type ClusterSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
+	// NetworkIsolation identifies whether the cluster should be isolated
+	// from other cluster
 	// +optional
-	NetworkIsolationEnabled *bool `json:"networkIsolation,omitempty"`
+	NetworkIsolation *bool `json:"networkIsolation,omitempty"`
 
-	// preferred to schedule workload to this hosts, otherwise
+	// NodeOccupies describe the node that this cluster claim to occupy.
 	// +optional
 	NodeOccupies []NodeOccupy `json:"nodeOccupies,omitempty" yaml:"nodeOccupies,omitempty"`
 }
 
 // ClusterStatus defines the observed state of Cluster
 type ClusterStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
 	// +optional
 	//Condition []metav1.Condition `json:"condition"`
 
+	Applications v1alpha1.ApplicationReference `json:"applications"`
+
 	// +optional
-	NodeOccupies []NodeOccupy `json:"occupiedNodes"`
+	NodeOccupied []NodeOccupy `json:"occupiedNodes"`
 
 	// +optional
 	NetworkIsolated bool `json:"networkIsolated"`
 }
 
+// Cluster metaphor a set of machines that join the
+// kubernetes cluster, on which developer will deploy
+// bunch of applications on it.
 // TODO: printcolumn not working, value empty
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster
 // +kubebuilder:printcolumn:name="Isolated",type=boolean,JSONPath=".status.NetworkIsolated"
-// +kubebuilder:printcolumn:name="NodeOccupies",type=string,JSONPath=`.status.NodeOccupies[*].NodeName`
+// +kubebuilder:printcolumn:name="NodeOccupied",type=string,JSONPath=`.status.NodeOccupied[*].NodeName`
 
 // Cluster is the Schema for the clusters API
 type Cluster struct {
