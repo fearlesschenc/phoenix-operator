@@ -1,4 +1,4 @@
-package webhook
+package core
 
 import (
 	"context"
@@ -11,13 +11,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
-type podAnnotator struct {
+type PodAnnotator struct {
 	Client  client.Client
 	decoder *admission.Decoder
 }
 
-func (a *podAnnotator) MutatePod(pod *corev1.Pod, workspace string) {
+func (a *PodAnnotator) MutatePod(pod *corev1.Pod, workspace string) {
 	//pod.Spec.NodeSelector[constants.WorkspaceLabel] = workspace
+	// prefer to schedule on workspace claim node.
 	pod.Spec.Affinity.NodeAffinity = &corev1.NodeAffinity{
 		PreferredDuringSchedulingIgnoredDuringExecution: []corev1.PreferredSchedulingTerm{
 			{
@@ -47,7 +48,8 @@ func (a *podAnnotator) MutatePod(pod *corev1.Pod, workspace string) {
 	})
 }
 
-func (a *podAnnotator) Handle(ctx context.Context, req admission.Request) admission.Response {
+// +kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=fail,groups="",version=v1,resources=pods,verbs=create;update
+func (a *PodAnnotator) Handle(ctx context.Context, req admission.Request) admission.Response {
 	pod := &corev1.Pod{}
 	err := a.decoder.Decode(req, pod)
 	if err != nil {
@@ -73,7 +75,7 @@ func (a *podAnnotator) Handle(ctx context.Context, req admission.Request) admiss
 	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
 }
 
-func (a *podAnnotator) InjectDecoder(d *admission.Decoder) error {
+func (a *PodAnnotator) InjectDecoder(d *admission.Decoder) error {
 	a.decoder = d
 	return nil
 }

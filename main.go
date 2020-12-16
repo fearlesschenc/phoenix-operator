@@ -18,17 +18,17 @@ package main
 
 import (
 	"flag"
-	"os"
-
+	"github.com/fearlesschenc/phoenix-operator/pkg/webhook/core"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	tenantv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/tenant/v1alpha1"
-	workloadv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/workload/v1alpha1"
 	tenantcontroller "github.com/fearlesschenc/phoenix-operator/controllers/tenant"
 	// +kubebuilder:scaffold:imports
 )
@@ -42,7 +42,6 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(tenantv1alpha1.AddToScheme(scheme))
-	utilruntime.Must(workloadv1alpha1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -69,43 +68,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// TODO
-	// Setup with repo controller
-
-	//if err = (&cluster.Reconciler{
-	//	Client: mgr.GetClient(),
-	//	Log:    ctrl.Log.WithName("controllers").WithName("Cluster"),
-	//	Scheme: mgr.GetScheme(),
-	//}).SetupWithManager(mgr); err != nil {
-	//	setupLog.Error(err, "unable to create controller", "controller", "Cluster")
-	//	os.Exit(1)
-	//}
-	//if err = (&workloadcontroller.ApplicationReconciler{
-	//	Client: mgr.GetClient(),
-	//	Log:    ctrl.Log.WithName("controllers").WithName("Application"),
-	//	Scheme: mgr.GetScheme(),
-	//}).SetupWithManager(mgr); err != nil {
-	//	setupLog.Error(err, "unable to create controller", "controller", "Application")
-	//	os.Exit(1)
-	//}
-	//if err = (&workloadcontroller.OfflineApplicationReconciler{
-	//	Client: mgr.GetClient(),
-	//	Log:    ctrl.Log.WithName("controllers").WithName("OfflineApplication"),
-	//	Scheme: mgr.GetScheme(),
-	//}).SetupWithManager(mgr); err != nil {
-	//	setupLog.Error(err, "unable to create controller", "controller", "OfflineApplication")
-	//	os.Exit(1)
-	//}
-
-	// workspace webhook
-	// hookServer := mgr.GetWebhookServer()
-	// hookServer.Register("/mutate-tenant-v1alpha1-workspace", &webhook.Admission{Handler: &tenantv1alpha1.WorkspaceMutator{Client: mgr.GetClient()}})
-	// hookServer.Register("/validate-tenant-v1alpha1-workspace", &webhook.Admission{Handler: &webhook2.WorkspaceValidator{Client: mgr.GetClient()}})
-
-	//if err = (&tenantv1alpha1.Cluster{}).SetupWebhookWithManager(mgr); err != nil {
-	//	setupLog.Error(err, "unable to create webhook", "webhook", "Cluster")
-	//	os.Exit(1)
-	//}
 	if err = (&tenantcontroller.WorkspaceClaimReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("WorkspaceClaim"),
@@ -114,6 +76,10 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "WorkspaceClaim")
 		os.Exit(1)
 	}
+
+	// workspace webhook
+	hookServer := mgr.GetWebhookServer()
+	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: &core.PodAnnotator{Client: mgr.GetClient()}})
 	// +kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")
