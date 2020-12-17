@@ -4,7 +4,6 @@ import (
 	"context"
 	tenantv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/tenant/v1alpha1"
 	"github.com/fearlesschenc/phoenix-operator/pkg/util"
-	"github.com/fearlesschenc/phoenix-operator/pkg/workspace"
 	"github.com/go-logr/logr"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -31,11 +30,11 @@ func NewAdaptor(ctx context.Context, client client.Client, logger logr.Logger, s
 }
 
 func (adaptor *Adaptor) EnsureFinalizerAppended() (util.OperationResult, error) {
-	if controllerutil.ContainsFinalizer(adaptor.claim, workspace.ClaimFinalizer) {
+	if controllerutil.ContainsFinalizer(adaptor.claim, tenantv1alpha1.ClaimFinalizer) {
 		return util.ContinueProcessing()
 	}
 
-	controllerutil.AddFinalizer(adaptor.claim, workspace.ClaimFinalizer)
+	controllerutil.AddFinalizer(adaptor.claim, tenantv1alpha1.ClaimFinalizer)
 	if err := adaptor.Update(adaptor.ctx, adaptor.claim); err != nil {
 		return util.RequeueWithError(err)
 	}
@@ -80,7 +79,7 @@ func (adaptor *Adaptor) EnsureWorkspaceClaimDeletionProcessed() (util.OperationR
 		}
 	}
 
-	controllerutil.RemoveFinalizer(adaptor.claim, workspace.ClaimFinalizer)
+	controllerutil.RemoveFinalizer(adaptor.claim, tenantv1alpha1.ClaimFinalizer)
 	if err := adaptor.Update(adaptor.ctx, adaptor.claim); err != nil {
 		return util.RequeueWithError(err)
 	}
@@ -111,24 +110,21 @@ func (adaptor *Adaptor) EnsureWorkspaceClaimPossessionProcessed() (util.Operatio
 			continue
 		}
 
-		updated := false
 		node := &v1.Node{}
 		if err := adaptor.Get(adaptor.ctx, types.NamespacedName{Name: nodeName}, node); err != nil {
 			return util.RequeueWithError(err)
 		}
 
 		if !status.claimed {
-			updated = adaptor.removeWorkspacePossessionOfNode(node)
+			adaptor.removeWorkspacePossessionOfNode(node)
 		} else {
-			updated = adaptor.addWorkspacePossessionOfNode(node)
+			adaptor.addWorkspacePossessionOfNode(node)
 		}
 
-		if updated {
-			if err := adaptor.Update(adaptor.ctx, node); err != nil {
-				return util.RequeueWithError(err)
-			}
-			changed = true
+		if err := adaptor.Update(adaptor.ctx, node); err != nil {
+			return util.RequeueWithError(err)
 		}
+		changed = true
 	}
 
 	if changed {

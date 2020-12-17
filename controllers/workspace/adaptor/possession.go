@@ -45,30 +45,26 @@ func (adaptor *Adaptor) isNodePossessedByWorkspace(node v1.Node) bool {
 		node.ObjectMeta.Labels[constants.WorkspaceLabel] == adaptor.claim.Spec.WorkspaceRef.Name
 }
 
-func (adaptor *Adaptor) removeWorkspacePossessionOfNode(node *v1.Node) bool {
-	updated := false
-
+func (adaptor *Adaptor) removeWorkspacePossessionOfNode(node *v1.Node) {
+	// taint
 	newTaints := node.Spec.Taints
 	for _, taint := range adaptor.workspaceTaints {
-		newTaints, updated = taints.DeleteTaint(newTaints, &taint)
+		newTaints, _ = taints.DeleteTaint(newTaints, &taint)
 	}
 	node.Spec.Taints = newTaints
 
+	// label
 	if _, ok := node.ObjectMeta.Labels[constants.WorkspaceLabel]; ok {
-		updated = true
 		node.ObjectMeta.Labels = labels.CloneAndRemoveLabel(node.ObjectMeta.Labels, constants.WorkspaceLabel)
 	}
-
-	return updated
 }
 
-func (adaptor *Adaptor) addWorkspacePossessionOfNode(node *v1.Node) bool {
-	updated := false
-
+func (adaptor *Adaptor) addWorkspacePossessionOfNode(node *v1.Node) {
+	// taint
 	for _, taint := range adaptor.workspaceTaints {
-		node, updated, _ = taints.AddOrUpdateTaint(node, &taint)
+		node.Spec.Taints = append(node.Spec.Taints, taint)
 	}
-	node.Labels = labels.AddLabel(node.Labels, constants.WorkspaceLabel, adaptor.claim.Spec.WorkspaceRef.Name)
 
-	return updated
+	// label
+	node.Labels = labels.AddLabel(node.Labels, constants.WorkspaceLabel, adaptor.claim.Spec.WorkspaceRef.Name)
 }

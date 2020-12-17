@@ -50,7 +50,6 @@ spec:
               - name
               type: object
           required:
-          - node
           - workspaceRef
           type: object
         status:

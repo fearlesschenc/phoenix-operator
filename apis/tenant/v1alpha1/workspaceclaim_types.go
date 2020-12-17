@@ -31,9 +31,11 @@ type WorkspaceRef struct {
 type WorkspaceClaimSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	// +required
 	WorkspaceRef WorkspaceRef `json:"workspaceRef"`
 
-	Node []string `json:"node"`
+	// +optional
+	Node []string `json:"node,omitempty"`
 }
 
 // WorkspaceClaimStatus defines the observed state of WorkspaceClaim
@@ -67,3 +69,5 @@ type WorkspaceClaimList struct {
 func init() {
 	SchemeBuilder.Register(&WorkspaceClaim{}, &WorkspaceClaimList{})
 }
+
+const ClaimFinalizer = "workspaceclaim.finalizer.kubesphere.io"

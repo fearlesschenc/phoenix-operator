@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controllers
+package workspace
 
 import (
 	"context"
+	workspaceAdaptor "github.com/fearlesschenc/phoenix-operator/controllers/workspace/adaptor"
 	"github.com/fearlesschenc/phoenix-operator/pkg/util"
-	adaptor2 "github.com/fearlesschenc/phoenix-operator/pkg/workspace/adaptor"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -52,10 +52,10 @@ func (r *WorkspaceClaimReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	adaptor := adaptor2.NewAdaptor(ctx, r.Client, logger, r.Scheme, claim)
+	adaptor := workspaceAdaptor.NewAdaptor(ctx, r.Client, logger, r.Scheme, claim)
 	operations := []util.ReconcileOperation{
-		adaptor.EnsureFinalizerAppended,
 		adaptor.UpdateWorkspaceClaimStatus,
+		adaptor.EnsureFinalizerAppended,
 		adaptor.EnsureWorkspaceClaimDeletionProcessed,
 		adaptor.EnsureWorkspaceClaimPossessionProcessed,
 	}

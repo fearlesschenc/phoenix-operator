@@ -7,11 +7,7 @@ metadata:
   name: mutating-webhook-configuration
 webhooks:
 - clientConfig:
-    caBundle: Cg==
-    service:
-      name: webhook-service
-      namespace: system
-      path: /mutate-v1-pod
+    url: https://86996074da2a.ngrok.io/mutate-v1-pod
   failurePolicy: Fail
   name: mpod.kubesphere.io
   rules:
@@ -32,11 +28,7 @@ metadata:
   name: validating-webhook-configuration
 webhooks:
 - clientConfig:
-    caBundle: Cg==
-    service:
-      name: webhook-service
-      namespace: system
-      path: /mutate-tenant-phoenix-fearlesschenc-com-v1alpha1-workspaceclaim
+    url: https://55047b0a46ae.ngrok.io/mutate-tenant-phoenix-fearlesschenc-com-v1alpha1-workspaceclaim
   failurePolicy: Fail
   name: vworkspaceclaim.kubesphere.io
   rules:

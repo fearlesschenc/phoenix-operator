@@ -18,7 +18,9 @@ package main
 
 import (
 	"flag"
-	"github.com/fearlesschenc/phoenix-operator/pkg/webhook/core"
+	"github.com/fearlesschenc/phoenix-operator/controllers/workspace"
+	webhookcore "github.com/fearlesschenc/phoenix-operator/pkg/webhook/core"
+	webhooktenant "github.com/fearlesschenc/phoenix-operator/pkg/webhook/tenant"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -29,7 +31,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	tenantv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/tenant/v1alpha1"
-	tenantcontroller "github.com/fearlesschenc/phoenix-operator/controllers/tenant"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -57,6 +58,9 @@ func main() {
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+		// For Debug
+		//CertDir: "/tmp/phoenix-operator/k8s-webhook-server/serving-certs",
+
 		Scheme:             scheme,
 		MetricsBindAddress: metricsAddr,
 		Port:               9443,
@@ -68,7 +72,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&tenantcontroller.WorkspaceClaimReconciler{
+	if err = (&workspace.WorkspaceClaimReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("WorkspaceClaim"),
 		Scheme: mgr.GetScheme(),
@@ -78,8 +82,9 @@ func main() {
 	}
 
 	// workspace webhook
-	hookServer := mgr.GetWebhookServer()
-	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: &core.PodAnnotator{Client: mgr.GetClient()}})
+	webhookServer := mgr.GetWebhookServer()
+	webhookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: &webhookcore.PodMutator{Client: mgr.GetClient()}})
+	webhookServer.Register("/mutate-tenant-phoenix-fearlesschenc-com-v1alpha1-workspaceclaim", &webhook.Admission{Handler: &webhooktenant.WorkspaceClaimValidator{Client: mgr.GetClient()}})
 	// +kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")

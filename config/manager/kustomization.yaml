@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: registry.cn-hangzhou.aliyuncs.com/fearlesschenc/containers/phoenix/phoenix-operator
-  newTag: latest
+  newTag: v0.0.1
