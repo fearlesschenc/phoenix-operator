@@ -13,8 +13,10 @@ spec:
     kind: WorkspaceClaim
     listKind: WorkspaceClaimList
     plural: workspaceclaims
+    shortNames:
+    - wksc
     singular: workspaceclaim
-  scope: Namespaced
+  scope: Cluster
   subresources:
     status: {}
   validation:

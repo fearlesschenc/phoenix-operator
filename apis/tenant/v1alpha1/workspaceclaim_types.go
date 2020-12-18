@@ -47,6 +47,7 @@ type WorkspaceClaimStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:resource:shortName=wksc,singular=workspaceclaim,scope=Cluster
 
 // WorkspaceClaim is the Schema for the workspaceclaims API
 type WorkspaceClaim struct {
