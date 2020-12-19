@@ -1,4 +1,5 @@
 ## Append samples you want in your CSV to this file as resources ##
 resources:
 - tenant_v1alpha1_workspaceclaim.yaml
+- networking_v1alpha1_networkpolicy.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples
