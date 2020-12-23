@@ -1,4 +1,4 @@
-package networkpolicy
+package status
 
 import (
 	"context"
@@ -10,11 +10,14 @@ import (
 	"sort"
 )
 
-const networkPolicyOwnerKey = ".meta.controller"
+type updater struct {
+	obj    *networkingv1alpha1.NetworkPolicy
+	client client.Client
+}
 
-func (r *Reconciliation) UpdateStatus() (reconcile.Result, error) {
+func (u *updater) UpdateStatus() (reconcile.Result, error) {
 	networkPolicies := &networkingv1.NetworkPolicyList{}
-	if err := r.List(context.TODO(), networkPolicies, client.MatchingFields{networkPolicyOwnerKey: r.obj.Name}); err != nil {
+	if err := u.client.List(context.TODO(), networkPolicies, client.MatchingFields{networkingv1alpha1.NetworkPolicyOwnerKey: u.obj.Name}); err != nil {
 		return reconcile.RequeueWithError(err)
 	}
 
@@ -27,9 +30,9 @@ func (r *Reconciliation) UpdateStatus() (reconcile.Result, error) {
 		return refs[i].Namespace < refs[j].Namespace
 	})
 
-	if !reflect.DeepEqual(refs, r.obj.Status.NetworkPolicyRefs) {
-		r.obj.Status.NetworkPolicyRefs = refs
-		if err := r.Status().Update(context.TODO(), r.obj); err != nil {
+	if !reflect.DeepEqual(refs, u.obj.Status.NetworkPolicyRefs) {
+		u.obj.Status.NetworkPolicyRefs = refs
+		if err := u.client.Status().Update(context.TODO(), u.obj); err != nil {
 			return reconcile.RequeueWithError(err)
 		}
 

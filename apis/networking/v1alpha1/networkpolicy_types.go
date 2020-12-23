@@ -79,3 +79,4 @@ func init() {
 }
 
 const NetworkPolicyFinalizer = "networkpolicy.finalizer.kubesphere.io"
+const NetworkPolicyOwnerKey = ".meta.controller"
