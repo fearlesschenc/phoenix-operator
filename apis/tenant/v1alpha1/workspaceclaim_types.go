@@ -72,3 +72,4 @@ func init() {
 }
 
 const WorkspaceClaimFinalizer = "workspaceclaim.finalizer.kubesphere.io"
+const WorkspaceClaimOwnerKey = ".meta.controller"

@@ -28,29 +28,26 @@ type Reconciliation struct {
 	status.Updater
 
 	// Reconciler variable
-	client.Client
+	client client.Client
 	scheme *runtime.Scheme
-
-	// reconciliation specific variable
-	ctx context.Context
-	log logr.Logger
-	obj *networkingv1alpha1.NetworkPolicy
+	log    logr.Logger
+	obj    *networkingv1alpha1.NetworkPolicy
 }
 
-func newReconciliation(r *Reconciler, log logr.Logger, obj *networkingv1alpha1.NetworkPolicy) *Reconciliation {
-	reconciliation := &Reconciliation{
-		Client: r.Client,
-		scheme: r.Scheme,
+func newReconciliation(client client.Client, log logr.Logger, scheme *runtime.Scheme, obj *networkingv1alpha1.NetworkPolicy) *Reconciliation {
+	r := &Reconciliation{
+		client: client,
+		scheme: scheme,
 		log:    log,
 		obj:    obj,
 	}
 
-	reconciliation.Initializer = initialize.NewInitializer(reconciliation.Client, reconciliation.obj)
-	reconciliation.Finalizer = finalize.NewFinalizer(reconciliation.Client, reconciliation.obj)
-	reconciliation.Validator = validate.NewValidator(reconciliation.obj)
-	reconciliation.Updater = status.NewUpdater(reconciliation.Client, reconciliation.obj)
+	r.Initializer = initialize.NewInitializer(r.client, r.obj)
+	r.Finalizer = finalize.NewFinalizer(r.client, r.obj)
+	r.Validator = validate.NewValidator(r.obj)
+	r.Updater = status.NewUpdater(r.client, r.obj)
 
-	return reconciliation
+	return r
 }
 
 func (r *Reconciliation) getWorkspaceNamespaces(workspace string, namespaceSelector *metav1.LabelSelector) ([]string, error) {
@@ -61,7 +58,7 @@ func (r *Reconciliation) getWorkspaceNamespaces(workspace string, namespaceSelec
 	}
 
 	namespaceList := &corev1.NamespaceList{}
-	if err := r.List(r.ctx, namespaceList, &client.ListOptions{LabelSelector: selector}); err != nil {
+	if err := r.client.List(context.TODO(), namespaceList, &client.ListOptions{LabelSelector: selector}); err != nil {
 		return nil, err
 	}
 
@@ -84,7 +81,7 @@ func (r *Reconciliation) getNetworkPolicySpecifiedNamespaces() ([]corev1.Namespa
 	}
 
 	namespaces := &corev1.NamespaceList{}
-	if err := r.List(r.ctx, namespaces, &client.ListOptions{LabelSelector: namespaceSelector}); err != nil {
+	if err := r.client.List(context.TODO(), namespaces, &client.ListOptions{LabelSelector: namespaceSelector}); err != nil {
 		return nil, err
 	}
 
@@ -141,7 +138,7 @@ func (r *Reconciliation) ensureTargetAllowAccessFrom(namespace string, from []st
 	for _, ref := range r.obj.Status.NetworkPolicyRefs {
 		if ref.Namespace == namespace {
 			policy := &networkingv1.NetworkPolicy{}
-			if err := r.Get(r.ctx, types.NamespacedName{Namespace: ref.Namespace, Name: r.obj.Name}, policy); err != nil {
+			if err := r.client.Get(context.TODO(), types.NamespacedName{Namespace: ref.Namespace, Name: r.obj.Name}, policy); err != nil {
 				return false, err
 			}
 
@@ -153,7 +150,7 @@ func (r *Reconciliation) ensureTargetAllowAccessFrom(namespace string, from []st
 	if np != nil {
 		changed := ensureNetworkPolicyAllowFrom(np, from)
 		if changed {
-			if err := r.Update(r.ctx, np); err != nil {
+			if err := r.client.Update(context.TODO(), np); err != nil {
 				return false, err
 			}
 
@@ -164,7 +161,7 @@ func (r *Reconciliation) ensureTargetAllowAccessFrom(namespace string, from []st
 	}
 
 	np = r.newNamespaceNetworkPolicy(namespace, from)
-	if err := r.Create(r.ctx, np); err != nil {
+	if err := r.client.Create(context.TODO(), np); err != nil {
 		return false, err
 	}
 
@@ -185,7 +182,7 @@ func (r *Reconciliation) ensureUnspecifiedNamespaceNetworkPolicyDeleted(namespac
 		}
 
 		if !found {
-			if err := r.Delete(r.ctx, &networkingv1.NetworkPolicy{
+			if err := r.client.Delete(context.TODO(), &networkingv1.NetworkPolicy{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: ref.Namespace,
 					Name:      r.obj.Name,
@@ -212,7 +209,7 @@ func (r *Reconciliation) addNonWorkspaceNamespace(namespaces []string) ([]string
 	})
 
 	list := &corev1.NamespaceList{}
-	if err := r.List(r.ctx, list, &client.ListOptions{LabelSelector: selector}); err != nil {
+	if err := r.client.List(context.TODO(), list, &client.ListOptions{LabelSelector: selector}); err != nil {
 		return nil, err
 	}
 
@@ -235,7 +232,7 @@ func (r *Reconciliation) addSystemWorkspaceNamespace(namespaces []string) ([]str
 	})
 
 	list := &corev1.NamespaceList{}
-	if err := r.List(r.ctx, list, &client.ListOptions{LabelSelector: selector}); err != nil {
+	if err := r.client.List(context.TODO(), list, &client.ListOptions{LabelSelector: selector}); err != nil {
 		return nil, err
 	}
 

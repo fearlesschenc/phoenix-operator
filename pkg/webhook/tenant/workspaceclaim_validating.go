@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	tenantv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/tenant/v1alpha1"
-	"github.com/fearlesschenc/phoenix-operator/pkg/constants"
+	"github.com/fearlesschenc/phoenix-operator/pkg/schedule"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -46,9 +46,8 @@ func (v *WorkspaceClaimValidator) Handle(ctx context.Context, req admission.Requ
 				return admission.Errored(http.StatusInternalServerError, err)
 			}
 
-			// TODO: package all node possession code into a module
-			// occupied
-			if workspace, ok := node.ObjectMeta.Labels[constants.WorkspaceLabelKey]; ok && workspace != claim.Spec.WorkspaceRef.Name {
+			// have been occupied
+			if workspace := schedule.GetNodeWorkspace(node); workspace != "" && workspace != claim.Spec.WorkspaceRef.Name {
 				return admission.Errored(http.StatusBadRequest, fmt.Errorf("node have been occupied"))
 			}
 		}

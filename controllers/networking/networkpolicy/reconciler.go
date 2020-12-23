@@ -53,7 +53,7 @@ func (r *Reconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	reconciliation := newReconciliation(r, logger, policy)
+	reconciliation := newReconciliation(r.Client, logger, r.Scheme, policy)
 	return reconcile.Run([]reconcile.TaskFunc{
 		reconciliation.EnsureNetworkPolicyValidated,
 		reconciliation.EnsureInitialized,

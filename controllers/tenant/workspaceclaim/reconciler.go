@@ -20,10 +20,18 @@ import (
 	"context"
 	tenantv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/tenant/v1alpha1"
 	"github.com/fearlesschenc/phoenix-operator/pkg/reconcile"
+	"github.com/fearlesschenc/phoenix-operator/pkg/schedule"
 	"github.com/go-logr/logr"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	ctrlreconcile "sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // Reconciler reconciles a WorkspaceClaim object
@@ -47,20 +55,48 @@ func (r *Reconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	reconciliation := newReconciliation(ctx, r.Client, logger, r.Scheme, claim)
+	reconciliation := newReconciliation(r.Client, logger, r.Scheme, claim)
 	return reconcile.Run([]reconcile.TaskFunc{
-		reconciliation.UpdateWorkspaceClaimStatus,
-		reconciliation.EnsureFinalizerAppended,
-		reconciliation.EnsureWorkspaceClaimDeletionProcessed,
+		reconciliation.EnsureInitialized,
+		reconciliation.EnsureWorkspaceClaimValidated,
+		reconciliation.EnsureWorkspaceClaimFinalized,
+		reconciliation.UpdateStatus,
 		reconciliation.EnsureWorkspaceClaimPossessionProcessed,
 	})
 }
 
 func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
+	if err := mgr.GetFieldIndexer().IndexField(context.TODO(), &corev1.Node{}, tenantv1alpha1.WorkspaceClaimOwnerKey, func(object runtime.Object) []string {
+		node := object.(*corev1.Node)
+
+		workspace := schedule.GetNodeWorkspace(node)
+		if workspace != "" {
+			return []string{workspace}
+		}
+
+		return nil
+	}); err != nil {
+		return err
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&tenantv1alpha1.WorkspaceClaim{}).
-		// TODO
-		// watch node label change, removal
-		//Watches(&source.Kind{Type: &v1.Node{}}, &handler.EnqueueRequestsFromMapFunc{ToRequests: handler.ToRequestsFunc(r.mapNode)}).
+		Watches(
+			&source.Kind{Type: &corev1.Node{}},
+			handler.Funcs{
+				UpdateFunc: func(event event.UpdateEvent, limitingInterface workqueue.RateLimitingInterface) {
+					oldNode := event.ObjectOld.(*corev1.Node)
+					oldWorkspace := schedule.GetNodeWorkspace(oldNode)
+					if oldWorkspace == "" {
+						return
+					}
+
+					newNode := event.ObjectNew.(*corev1.Node)
+					newWorkspace := schedule.GetNodeWorkspace(newNode)
+					if oldWorkspace != newWorkspace {
+						limitingInterface.Add(ctrlreconcile.Request{types.NamespacedName{Name: oldWorkspace}})
+					}
+				},
+			}).
 		Complete(r)
 }
