@@ -27,23 +27,29 @@ import (
 type NetworkPolicySpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	// NamespaceSelector match namespace in networkpolicy's workspace. An empty
-	// NamespaceSelector select all namespace in workspace.
-	// +optional
 	NamespaceSelector metav1.LabelSelector `json:"namespaceSelector,omitempty"`
 
 	// +optional
-	Ingress []NetworkPolicyPeer `json:"ingress,omitempty"`
+	From []NetworkPolicyPeer `json:"ingress,omitempty"`
 }
 
 type NetworkPolicyPeer struct {
 	// +required
-	Workspace string `json:"workspace,omitempty"`
+	Workspace string `json:"workspace"`
 
 	// NamespaceSelector match namespace in networkpolicy's workspace. An empty
 	// NamespaceSelector select all namespace in workspace.
 	// +optional
 	NamespaceSelector metav1.LabelSelector `json:"namespaceSelector,omitempty"`
+}
+
+type NetworkPolicyRef struct {
+	// +required
+	Namespace string `json:"namespace"`
+}
+
+type NetworkPolicyStatus struct {
+	NetworkPolicyRefs []NetworkPolicyRef `json:"networkPolicyRefs,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -55,7 +61,8 @@ type NetworkPolicy struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec NetworkPolicySpec `json:"spec,omitempty"`
+	Spec   NetworkPolicySpec   `json:"spec,omitempty"`
+	Status NetworkPolicyStatus `json:"status",omitempty`
 }
 
 // +kubebuilder:object:root=true
@@ -70,3 +77,5 @@ type NetworkPolicyList struct {
 func init() {
 	SchemeBuilder.Register(&NetworkPolicy{}, &NetworkPolicyList{})
 }
+
+const NetworkPolicyFinalizer = "networkpolicy.finalizer.kubesphere.io"

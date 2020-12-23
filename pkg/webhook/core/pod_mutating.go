@@ -25,7 +25,7 @@ func getPodAffinity(workspace string) *corev1.Affinity {
 					Preference: corev1.NodeSelectorTerm{
 						MatchExpressions: []corev1.NodeSelectorRequirement{
 							{
-								Key:      constants.WorkspaceLabel,
+								Key:      constants.WorkspaceLabelKey,
 								Operator: corev1.NodeSelectorOpIn,
 								Values:   []string{workspace},
 							},
@@ -40,13 +40,13 @@ func getPodAffinity(workspace string) *corev1.Affinity {
 func getWorkspaceToleration(workspace string) []corev1.Toleration {
 	return []corev1.Toleration{
 		{
-			Key:      constants.WorkspaceLabel,
+			Key:      constants.WorkspaceLabelKey,
 			Operator: corev1.TolerationOpEqual,
 			Value:    workspace,
 			Effect:   corev1.TaintEffectNoExecute,
 		},
 		{
-			Key:      constants.WorkspaceLabel,
+			Key:      constants.WorkspaceLabelKey,
 			Operator: corev1.TolerationOpEqual,
 			Value:    workspace,
 			Effect:   corev1.TaintEffectNoSchedule,
@@ -55,7 +55,7 @@ func getWorkspaceToleration(workspace string) []corev1.Toleration {
 }
 
 func (m *PodMutator) InjectPodAffinityAndTolerations(pod *corev1.Pod, workspace string) {
-	// pod.Spec.NodeSelector[constants.WorkspaceLabel] = workspace
+	// pod.Spec.NodeSelector[constants.WorkspaceLabelKey] = workspace
 	// prefer to schedule on workspace claim node.
 	pod.Spec.Affinity = getPodAffinity(workspace)
 	// TODO: toleration merge
@@ -75,7 +75,7 @@ func (m *PodMutator) InjectPodAffinityAndTolerations(pod *corev1.Pod, workspace 
 //}
 
 // +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=fail,groups="",versions=v1,resources=pods,verbs=create,name=mpod.kubesphere.io
+// +kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=Ignore,groups="",versions=v1,resources=pods,verbs=create,name=mpod.kubesphere.io
 
 func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admission.Response {
 	pod := &corev1.Pod{}
@@ -90,7 +90,7 @@ func (m *PodMutator) Handle(ctx context.Context, req admission.Request) admissio
 	}
 
 	// get pod's workspace
-	workspace, ok := namespace.Labels[constants.WorkspaceLabel]
+	workspace, ok := namespace.Labels[constants.WorkspaceLabelKey]
 	if !ok {
 		return admission.Allowed("skip: pod have no workspace")
 	}

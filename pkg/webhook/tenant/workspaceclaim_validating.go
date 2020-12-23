@@ -48,7 +48,7 @@ func (v *WorkspaceClaimValidator) Handle(ctx context.Context, req admission.Requ
 
 			// TODO: package all node possession code into a module
 			// occupied
-			if workspace, ok := node.ObjectMeta.Labels[constants.WorkspaceLabel]; ok && workspace != claim.Spec.WorkspaceRef.Name {
+			if workspace, ok := node.ObjectMeta.Labels[constants.WorkspaceLabelKey]; ok && workspace != claim.Spec.WorkspaceRef.Name {
 				return admission.Errored(http.StatusBadRequest, fmt.Errorf("node have been occupied"))
 			}
 		}

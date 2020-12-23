@@ -1,24 +1,37 @@
 package reconcile
 
 import (
-	"github.com/fearlesschenc/phoenix-operator/pkg/reconcile/task"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
-type Playbook []task.Func
+type TaskFunc func() (Result, error)
 
-func Run(playbook Playbook) (ctrl.Result, error) {
-	for _, taskFunc := range playbook {
-		result, err := taskFunc()
+func Run(taskFuncs []TaskFunc) (ctrl.Result, error) {
+	for _, taskFunc := range taskFuncs {
+		taskResult, err := taskFunc()
 
-		if err != nil || result.RequeueRequest {
-			return RequeueAfter(result.RequeueDelay, err)
+		if err != nil || taskResult.RequeueRequest {
+			return ctrl.Result{RequeueAfter: taskResult.RequeueDelay}, err
 		}
 
-		if result.CancelRequest {
-			return DoNotRequeue()
+		if taskResult.CancelReconciliation {
+			return ctrl.Result{}, nil
 		}
 	}
 
-	return DoNotRequeue()
+	return ctrl.Result{}, nil
 }
+
+//func DoNotRequeue() (ctrl.Result, error) {
+//	return ctrl.Result{}, nil
+//}
+
+//
+//func RequeueOnErr(err error) (ctrl.Result, error) {
+//	// note: reconcile will auto requeue failed request
+//	return ctrl.Result{}, err
+//}
+
+//func RequeueAfter(duration time.Duration, err error) (ctrl.Result, error) {
+//	return ctrl.Result{RequeueAfter: duration}, err
+//}

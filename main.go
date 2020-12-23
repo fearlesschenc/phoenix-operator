@@ -18,21 +18,25 @@ package main
 
 import (
 	"flag"
+	"os"
+
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
+
 	"github.com/fearlesschenc/phoenix-operator/controllers/networking/networkpolicy"
 	"github.com/fearlesschenc/phoenix-operator/controllers/tenant/workspaceclaim"
 	webhookcore "github.com/fearlesschenc/phoenix-operator/pkg/webhook/core"
 	webhooktenant "github.com/fearlesschenc/phoenix-operator/pkg/webhook/tenant"
-	"os"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	networkingv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/networking/v1alpha1"
-	tenantv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/tenant/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+
+	networkingv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/networking/v1alpha1"
+	tenantv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/tenant/v1alpha1"
+	tenantv1alpha2 "github.com/fearlesschenc/phoenix-operator/apis/tenant/v1alpha2"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -46,6 +50,7 @@ func init() {
 
 	utilruntime.Must(tenantv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(networkingv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(tenantv1alpha2.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -84,12 +89,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&networkpolicy.NetworkPolicyReconciler{
+	if err = (&networkpolicy.Reconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("NetworkPolicy"),
+		Log:    ctrl.Log.WithName("controllers").WithName("NetworkPolicyHandler"),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "NetworkPolicy")
+		setupLog.Error(err, "unable to create controller", "controller", "NetworkPolicyHandler")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder

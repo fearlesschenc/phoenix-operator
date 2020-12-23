@@ -12,7 +12,7 @@ webhooks:
       name: webhook-service
       namespace: system
       path: /mutate-v1-pod
-  failurePolicy: Fail
+  failurePolicy: Ignore
   name: mpod.kubesphere.io
   rules:
   - apiGroups:
@@ -48,3 +48,20 @@ webhooks:
     - CREATE
     resources:
     - workspaceclaims
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-tenant-phoenix-fearlesschenc-com-v1alpha1-networkpolicy
+  failurePolicy: Fail
+  name: vnetworkpolicy.kubesphere.io
+  rules:
+  - apiGroups:
+    - networking.phoenix.fearlesschenc.com
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    resources:
+    - networkpolicys

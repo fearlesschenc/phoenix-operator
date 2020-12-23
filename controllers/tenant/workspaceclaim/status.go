@@ -2,8 +2,8 @@ package workspaceclaim
 
 import (
 	"github.com/fearlesschenc/phoenix-operator/apis/tenant/v1alpha1"
-	"github.com/fearlesschenc/phoenix-operator/pkg/reconcile/task"
-	v1 "k8s.io/api/core/v1"
+	"github.com/fearlesschenc/phoenix-operator/pkg/reconcile"
+	corev1 "k8s.io/api/core/v1"
 	"reflect"
 	"sort"
 )
@@ -13,9 +13,9 @@ type NodePossessionStatus struct {
 	possessed bool
 }
 
-func (r *reconcilerWrapper) getLatestWorkspaceNodeStatus(status *v1alpha1.WorkspaceClaimStatus) error {
+func (r *reconciliation) getLatestWorkspaceNodeStatus(status *v1alpha1.WorkspaceClaimStatus) error {
 	// Update Nodes
-	nodeList := &v1.NodeList{}
+	nodeList := &corev1.NodeList{}
 	if err := r.List(r.ctx, nodeList); err != nil {
 		return err
 	}
@@ -33,21 +33,21 @@ func (r *reconcilerWrapper) getLatestWorkspaceNodeStatus(status *v1alpha1.Worksp
 }
 
 // UpdateWorkspaceClaimStatus initialize status of workspaceClaim
-func (r *reconcilerWrapper) UpdateWorkspaceClaimStatus() (task.Result, error) {
+func (r *reconciliation) UpdateWorkspaceClaimStatus() (reconcile.Result, error) {
 	status := &v1alpha1.WorkspaceClaimStatus{}
 
 	if err := r.getLatestWorkspaceNodeStatus(status); err != nil {
-		return task.RequeueWithError(err)
+		return reconcile.RequeueWithError(err)
 	}
 
 	if !reflect.DeepEqual(status, &r.claim.Status) {
 		status.DeepCopyInto(&r.claim.Status)
 		if err := r.Status().Update(r.ctx, r.claim); err != nil {
-			return task.RequeueWithError(err)
+			return reconcile.RequeueWithError(err)
 		}
 
-		return task.StopProcessing()
+		return reconcile.Stop()
 	}
 
-	return task.ContinueProcessing()
+	return reconcile.Continue()
 }

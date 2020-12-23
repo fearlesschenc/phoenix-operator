@@ -31,6 +31,18 @@ rules:
   - update
   - watch
 - apiGroups:
+  - networking.phoenix.fearlesschenc.com
+  resources:
+  - networkpolicies
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - tenant.phoenix.fearlesschenc.com
   resources:
   - workspaceclaims

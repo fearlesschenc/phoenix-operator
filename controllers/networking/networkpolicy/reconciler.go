@@ -18,16 +18,16 @@ package networkpolicy
 
 import (
 	"context"
+	networkingv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/networking/v1alpha1"
+	"github.com/fearlesschenc/phoenix-operator/pkg/reconcile"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	networkingv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/networking/v1alpha1"
 )
 
-// NetworkPolicyReconciler reconciles a NetworkPolicy object
-type NetworkPolicyReconciler struct {
+// Reconciler reconciles a NetworkPolicyHandler object
+type Reconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
@@ -35,17 +35,21 @@ type NetworkPolicyReconciler struct {
 
 // +kubebuilder:rbac:groups=networking.phoenix.fearlesschenc.com,resources=networkpolicies,verbs=get;list;watch;create;update;patch;delete
 
-func (r *NetworkPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
-	_ = r.Log.WithValues("networkpolicy", req.NamespacedName)
+func (r *Reconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+	ctx := context.Background()
+	logger := r.Log.WithValues("networkpolicy", req.NamespacedName)
 
-	// your logic here
+	policy := &networkingv1alpha1.NetworkPolicy{}
+	if err := r.Get(ctx, req.NamespacedName, policy); err != nil {
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
 
-	return ctrl.Result{}, nil
-}
-
-func (r *NetworkPolicyReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&networkingv1alpha1.NetworkPolicy{}).
-		Complete(r)
+	reconciliation := newReconciliation(r, logger, policy)
+	return reconcile.Run([]reconcile.TaskFunc{
+		reconciliation.EnsureNetworkPolicyValidated,
+		reconciliation.EnsureInitialized,
+		reconciliation.EnsureNetworkPolicyFinalized,
+		reconciliation.UpdateStatus,
+		reconciliation.EnsureNetworkPolicyProcessed,
+	})
 }

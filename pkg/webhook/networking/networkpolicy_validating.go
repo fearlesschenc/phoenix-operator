@@ -21,7 +21,7 @@ func (v *NetworkPolicyValidator) Handle(ctx context.Context, req admission.Reque
 	np := &networkingv1alpha1.NetworkPolicy{}
 	v.decoder.Decode(req, np)
 
-	workspace, ok := np.Labels[constants.WorkspaceLabel]
+	workspace, ok := np.Labels[constants.WorkspaceLabelKey]
 	if !ok {
 		return admission.Errored(http.StatusBadRequest, fmt.Errorf("network policy must have a workspace"))
 	}
@@ -29,7 +29,7 @@ func (v *NetworkPolicyValidator) Handle(ctx context.Context, req admission.Reque
 	// TODO: validate workspace exist
 	_ = ctx
 	_ = workspace
-	// TODO: validate Ingress peer workspace exist
+	// TODO: validate From peer workspace exist
 
 	return admission.Allowed("")
 }

@@ -1,4 +1,8 @@
 package constants
 
 // TODO: use kubesphere const
-const WorkspaceLabel = "kubesphere.io/workspace"
+const (
+	WorkspaceLabelKey   = "kubesphere.io/workspace"
+	NamespaceLabelKey   = "kubesphere.io/namespace"
+	SystemWorkspaceName = "system-workspace"
+)

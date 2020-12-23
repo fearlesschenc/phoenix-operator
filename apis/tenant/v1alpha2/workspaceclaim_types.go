@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1alpha2
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -23,31 +23,23 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-type WorkspaceRef struct {
-	Name string `json:"name"`
-}
-
 // WorkspaceClaimSpec defines the desired state of WorkspaceClaim
 type WorkspaceClaimSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	// +required
-	WorkspaceRef WorkspaceRef `json:"workspaceRef"`
 
-	// +optional
-	Node []string `json:"node,omitempty"`
+	// Foo is an example field of WorkspaceClaim. Edit WorkspaceClaim_types.go to remove/update
+	Foo string `json:"foo,omitempty"`
 }
 
 // WorkspaceClaimStatus defines the observed state of WorkspaceClaim
 type WorkspaceClaimStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	Node []string `json:"node"`
 }
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
-// +kubebuilder:resource:shortName=wksc,singular=workspaceclaim,scope=Cluster
 
 // WorkspaceClaim is the Schema for the workspaceclaims API
 type WorkspaceClaim struct {
@@ -70,5 +62,3 @@ type WorkspaceClaimList struct {
 func init() {
 	SchemeBuilder.Register(&WorkspaceClaim{}, &WorkspaceClaimList{})
 }
-
-const WorkspaceClaimFinalizer = "workspaceclaim.finalizer.kubesphere.io"

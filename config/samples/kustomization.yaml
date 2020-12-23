@@ -2,4 +2,5 @@
 resources:
 - tenant_v1alpha1_workspaceclaim.yaml
 - networking_v1alpha1_networkpolicy.yaml
+- tenant_v1alpha2_workspaceclaim.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples
