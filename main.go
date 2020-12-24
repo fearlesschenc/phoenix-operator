@@ -36,7 +36,6 @@ import (
 
 	networkingv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/networking/v1alpha1"
 	tenantv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/tenant/v1alpha1"
-	tenantv1alpha2 "github.com/fearlesschenc/phoenix-operator/apis/tenant/v1alpha2"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -50,7 +49,6 @@ func init() {
 
 	utilruntime.Must(tenantv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(networkingv1alpha1.AddToScheme(scheme))
-	utilruntime.Must(tenantv1alpha2.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 

@@ -8,7 +8,7 @@ import (
 	"github.com/fearlesschenc/phoenix-operator/controllers/tenant/workspaceclaim/status"
 	"github.com/fearlesschenc/phoenix-operator/controllers/tenant/workspaceclaim/validate"
 	"github.com/fearlesschenc/phoenix-operator/pkg/reconcile"
-	"github.com/fearlesschenc/phoenix-operator/pkg/util"
+	"github.com/fearlesschenc/phoenix-operator/pkg/schedule"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"

@@ -19,14 +19,60 @@ spec:
   scope: Cluster
   subresources:
     status: {}
+  validation:
+    openAPIV3Schema:
+      description: WorkspaceClaim is the Schema for the workspaceclaims API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: WorkspaceClaimSpec defines the desired state of WorkspaceClaim
+          properties:
+            node:
+              items:
+                type: string
+              type: array
+            workspaceRef:
+              description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                Important: Run "make" to regenerate code after modifying this file'
+              properties:
+                name:
+                  type: string
+              required:
+              - name
+              type: object
+          required:
+          - workspaceRef
+          type: object
+        status:
+          description: WorkspaceClaimStatus defines the observed state of WorkspaceClaim
+          properties:
+            node:
+              description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+                of cluster Important: Run "make" to regenerate code after modifying
+                this file'
+              items:
+                type: string
+              type: array
+          required:
+          - node
+          type: object
+      type: object
   version: v1alpha1
   versions:
   - name: v1alpha1
     served: true
-    storage: false
-  - name: v1alpha2
-    served: true
-    storage: false
+    storage: true
 status:
   acceptedNames:
     kind: ""
