@@ -7,4 +7,3 @@ spec:
     name: foo
   node:
     - worker-1
-    - worker-2

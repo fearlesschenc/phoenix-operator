@@ -9,4 +9,6 @@ spec:
       kubesphere.io/namespace: foo1
   from:
   - workspace: bar
-    namespaceSelector: {}
+    namespaceSelector:
+      matchLabels:
+        kubesphere.io/namespace: bar1

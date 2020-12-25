@@ -43,6 +43,8 @@ type Reconciler struct {
 }
 
 // +kubebuilder:rbac:groups=networking.phoenix.fearlesschenc.com,resources=networkpolicies,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=networking.phoenix.fearlesschenc.com,resources=networkpolicies/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies,verbs=get;list;watch;create;update;patch;delete
 
 func (r *Reconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
