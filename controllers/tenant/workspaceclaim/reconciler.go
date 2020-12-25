@@ -56,11 +56,11 @@ func (r *Reconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	reconciliation := newReconciliation(r.Client, logger, r.Scheme, claim)
-	return reconcile.Run([]reconcile.TaskFunc{
+	return reconcile.RunReconcileRoutine([]reconcile.SubroutineFunc{
 		reconciliation.EnsureInitialized,
 		reconciliation.EnsureWorkspaceClaimValidated,
-		reconciliation.EnsureWorkspaceClaimFinalized,
 		reconciliation.UpdateStatus,
+		reconciliation.EnsureWorkspaceClaimFinalized,
 		reconciliation.EnsureWorkspaceClaimPossessionProcessed,
 	})
 }
@@ -94,7 +94,8 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager) error {
 					newNode := event.ObjectNew.(*corev1.Node)
 					newWorkspace := schedule.GetNodeWorkspace(newNode)
 					if oldWorkspace != newWorkspace {
-						limitingInterface.Add(ctrlreconcile.Request{types.NamespacedName{Name: oldWorkspace}})
+						limitingInterface.Add(ctrlreconcile.Request{NamespacedName: types.NamespacedName{Name: oldWorkspace}})
+						return
 					}
 				},
 			}).

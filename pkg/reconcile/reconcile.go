@@ -5,22 +5,44 @@ import (
 	"time"
 )
 
-type TaskFunc func() (Result, error)
+type ObjectState bool
 
-func Run(taskFuncs []TaskFunc) (ctrl.Result, error) {
-	for _, taskFunc := range taskFuncs {
-		taskResult, err := taskFunc()
+var (
+	ObjectChanged   ObjectState = true
+	ObjectUnchanged ObjectState = false
+)
 
-		if err != nil || taskResult.RequeueRequest {
-			return RequeueRequestAfter(taskResult.RequeueDelay, err)
+type SubroutineFunc func() (Result, error)
+
+func RunReconcileRoutine(subroutineFuncs []SubroutineFunc) (ctrl.Result, error) {
+	for _, subroutineFunc := range subroutineFuncs {
+		result, err := subroutineFunc()
+
+		if err != nil || result.RequeueRequest {
+			return RequeueRequestAfter(result.RequeueDelay, err)
 		}
 
-		if taskResult.CancelReconciliation {
+		if result.CancelReconciliation {
 			return DoNotRequeueRequest()
 		}
 	}
 
 	return DoNotRequeueRequest()
+}
+
+func RunSubRoutine(subroutineFuncs []SubroutineFunc) (Result, error) {
+	for _, subroutineFunc := range subroutineFuncs {
+		result, err := subroutineFunc()
+		if err != nil {
+			return result, err
+		}
+
+		if result.RequeueRequest || result.CancelReconciliation {
+			return result, err
+		}
+	}
+
+	return Continue()
 }
 
 func DoNotRequeueRequest() (ctrl.Result, error) {

@@ -1,7 +1,10 @@
 apiVersion: tenant.phoenix.fearlesschenc.com/v1alpha1
 kind: WorkspaceClaim
 metadata:
-  name: workspaceclaim-sample
+  name: foo
 spec:
-  # Add fields here
-  foo: bar
+  workspaceRef:
+    name: foo
+  node:
+    - worker-1
+    - worker-2

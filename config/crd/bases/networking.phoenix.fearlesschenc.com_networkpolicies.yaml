@@ -36,7 +36,7 @@ spec:
         spec:
           description: NetworkPolicySpec defines the desired state of NetworkPolicy
           properties:
-            ingress:
+            from:
               items:
                 properties:
                   namespaceSelector:
@@ -92,8 +92,10 @@ spec:
                 type: object
               type: array
             namespaceSelector:
-              description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-                Important: Run "make" to regenerate code after modifying this file'
+              description: A label selector is a label query over a set of resources.
+                The result of matchLabels and matchExpressions are ANDed. An empty
+                label selector matches all objects. A null label selector matches
+                no objects.
               properties:
                 matchExpressions:
                   description: matchExpressions is a list of label selector requirements.
@@ -135,6 +137,13 @@ spec:
                     are ANDed.
                   type: object
               type: object
+            workspace:
+              description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                Important: Run "make" to regenerate code after modifying this file'
+              type: string
+          required:
+          - from
+          - workspace
           type: object
         status:
           properties:
@@ -147,9 +156,9 @@ spec:
                 - namespace
                 type: object
               type: array
+          required:
+          - networkPolicyRefs
           type: object
-      required:
-      - status
       type: object
   version: v1alpha1
   versions:

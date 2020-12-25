@@ -54,17 +54,17 @@ func (r *Reconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	reconciliation := newReconciliation(r.Client, logger, r.Scheme, policy)
-	return reconcile.Run([]reconcile.TaskFunc{
+	return reconcile.RunReconcileRoutine([]reconcile.SubroutineFunc{
 		reconciliation.EnsureNetworkPolicyValidated,
 		reconciliation.EnsureInitialized,
-		reconciliation.EnsureNetworkPolicyFinalized,
 		reconciliation.UpdateStatus,
+		reconciliation.EnsureNetworkPolicyFinalized,
 		reconciliation.EnsureNetworkPolicyProcessed,
 	})
 }
 
 func (r *Reconciler) handleNetworkPolicy(object handler.MapObject) []ctrlreconcile.Request {
-	return []ctrlreconcile.Request{{types.NamespacedName{Name: object.Meta.GetName()}}}
+	return []ctrlreconcile.Request{{NamespacedName: types.NamespacedName{Name: object.Meta.GetName()}}}
 }
 
 func (r *Reconciler) filterNetworkPolicy(meta metav1.Object, object runtime.Object) bool {

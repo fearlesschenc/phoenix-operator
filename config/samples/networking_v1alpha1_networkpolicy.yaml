@@ -3,5 +3,10 @@ kind: NetworkPolicy
 metadata:
   name: networkpolicy-sample
 spec:
-  # Add fields here
-  foo: bar
+  workspace: foo
+  namespaceSelector:
+    matchLabels:
+      kubesphere.io/namespace: foo1
+  from:
+  - workspace: bar
+    namespaceSelector: {}

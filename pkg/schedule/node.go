@@ -28,12 +28,10 @@ func taintMatch(taint corev1.Taint, taintToMatch corev1.Taint) bool {
 		taint.Value == taintToMatch.Value
 }
 
-func taintExists(node corev1.Node, taints ...corev1.Taint) bool {
+func taintExists(node corev1.Node, taint corev1.Taint) bool {
 	for _, t := range node.Spec.Taints {
-		for _, taint := range taints {
-			if taintMatch(t, taint) {
-				return true
-			}
+		if taintMatch(t, taint) {
+			return true
 		}
 	}
 
@@ -41,17 +39,32 @@ func taintExists(node corev1.Node, taints ...corev1.Taint) bool {
 }
 
 func GetNodeWorkspace(node *corev1.Node) string {
-	return node.ObjectMeta.Labels[constants.WorkspaceLabelKey]
+	workspace := node.ObjectMeta.Labels[constants.WorkspaceLabelKey]
+	if workspace == "" {
+		return ""
+	}
+
+	for _, taint := range workspaceTaints(workspace) {
+		if !taintExists(*node, taint) {
+			return ""
+		}
+	}
+
+	return workspace
 }
 
-func IsNodePossessedByWorkspace(node *corev1.Node, workspace string) bool {
-	return taintExists(*node, workspaceTaints(workspace)...) ||
-		node.ObjectMeta.Labels[constants.WorkspaceLabelKey] == workspace
-}
+//func IsNodePossessedByWorkspace(node *corev1.Node, workspace string) bool {
+//	return taintExists(*node, workspaceTaints(workspace)...) &&
+//		node.ObjectMeta.Labels[constants.WorkspaceLabelKey] == workspace
+//}
 
 func AddWorkspacePossessionOfNode(node *corev1.Node, workspace string) {
 	// TODO: add taints
 	for _, taint := range workspaceTaints(workspace) {
+		if taintExists(*node, taint) {
+			continue
+		}
+
 		node.Spec.Taints = append(node.Spec.Taints, taint)
 	}
 

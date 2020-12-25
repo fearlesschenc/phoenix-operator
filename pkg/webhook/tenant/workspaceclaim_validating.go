@@ -33,6 +33,10 @@ func (v *WorkspaceClaimValidator) Handle(ctx context.Context, req admission.Requ
 
 	// TODO: validate workspaceRef exist
 
+	if claim.Name != claim.Spec.WorkspaceRef.Name {
+		return admission.Errored(http.StatusBadRequest, fmt.Errorf("claim's name must be same with workspace"))
+	}
+
 	nodes := claim.Spec.Node
 	if nodes != nil {
 		for _, nodeName := range nodes {

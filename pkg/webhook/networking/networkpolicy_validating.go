@@ -2,10 +2,7 @@ package networking
 
 import (
 	"context"
-	"fmt"
 	networkingv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/networking/v1alpha1"
-	"github.com/fearlesschenc/phoenix-operator/pkg/constants"
-	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
@@ -21,14 +18,7 @@ func (v *NetworkPolicyValidator) Handle(ctx context.Context, req admission.Reque
 	np := &networkingv1alpha1.NetworkPolicy{}
 	v.decoder.Decode(req, np)
 
-	workspace, ok := np.Labels[constants.WorkspaceLabelKey]
-	if !ok {
-		return admission.Errored(http.StatusBadRequest, fmt.Errorf("network policy must have a workspace"))
-	}
-
 	// TODO: validate workspace exist
-	_ = ctx
-	_ = workspace
 	// TODO: validate From peer workspace exist
 
 	return admission.Allowed("")

@@ -27,10 +27,14 @@ import (
 type NetworkPolicySpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	NamespaceSelector metav1.LabelSelector `json:"namespaceSelector,omitempty"`
+	// +required
+	Workspace string `json:"workspace"`
 
 	// +optional
-	From []NetworkPolicyPeer `json:"ingress,omitempty"`
+	NamespaceSelector metav1.LabelSelector `json:"namespaceSelector,omitempty"`
+
+	// +required
+	From []NetworkPolicyPeer `json:"from"`
 }
 
 type NetworkPolicyPeer struct {
@@ -49,7 +53,7 @@ type NetworkPolicyRef struct {
 }
 
 type NetworkPolicyStatus struct {
-	NetworkPolicyRefs []NetworkPolicyRef `json:"networkPolicyRefs,omitempty"`
+	NetworkPolicyRefs []NetworkPolicyRef `json:"networkPolicyRefs"`
 }
 
 // +kubebuilder:object:root=true
@@ -62,7 +66,7 @@ type NetworkPolicy struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec   NetworkPolicySpec   `json:"spec,omitempty"`
-	Status NetworkPolicyStatus `json:"status",omitempty`
+	Status NetworkPolicyStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true

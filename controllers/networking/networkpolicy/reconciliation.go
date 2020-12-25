@@ -51,6 +51,10 @@ func newReconciliation(client client.Client, log logr.Logger, scheme *runtime.Sc
 }
 
 func (r *Reconciliation) getWorkspaceNamespaces(workspace string, namespaceSelector *metav1.LabelSelector) ([]string, error) {
+	if namespaceSelector.MatchLabels == nil {
+		namespaceSelector.MatchLabels = map[string]string{}
+	}
+
 	namespaceSelector.MatchLabels[constants.WorkspaceLabelKey] = workspace
 	selector, err := metav1.LabelSelectorAsSelector(namespaceSelector)
 	if err != nil {
@@ -70,47 +74,34 @@ func (r *Reconciliation) getWorkspaceNamespaces(workspace string, namespaceSelec
 	return namespaces, nil
 }
 
-func (r *Reconciliation) getNetworkPolicySpecifiedNamespaces() ([]corev1.Namespace, error) {
-	workspaceName := r.obj.GetLabels()[constants.WorkspaceLabelKey]
-
-	namespaceLabelSelector := r.obj.Spec.NamespaceSelector.DeepCopy()
-	namespaceLabelSelector.MatchLabels[constants.WorkspaceLabelKey] = workspaceName
-	namespaceSelector, err := metav1.LabelSelectorAsSelector(namespaceLabelSelector)
-	if err != nil {
-		return nil, errors.NewBadRequest(err.Error())
+func isPeerMatchFromNamespaces(peers []networkingv1.NetworkPolicyPeer, namespaces []string) bool {
+	if len(peers) != len(namespaces) {
+		return false
 	}
 
-	namespaces := &corev1.NamespaceList{}
-	if err := r.client.List(context.TODO(), namespaces, &client.ListOptions{LabelSelector: namespaceSelector}); err != nil {
-		return nil, err
+	for i, peer := range peers {
+		selector, _ := metav1.LabelSelectorAsSelector(peer.NamespaceSelector)
+		if !selector.Matches(labels.Set{constants.NamespaceLabelKey: namespaces[i]}) {
+			return false
+		}
 	}
 
-	return namespaces.Items, nil
+	return true
 }
 
 func ensureNetworkPolicyAllowFrom(np *networkingv1.NetworkPolicy, namespaces []string) bool {
-	updated := false
-
-	for _, namespace := range namespaces {
-		found := false
-		for _, peer := range np.Spec.Ingress[0].From {
-			// ignore error
-			selector, _ := metav1.LabelSelectorAsSelector(peer.NamespaceSelector)
-			if selector.Matches(labels.Set{constants.NamespaceLabelKey: namespace}) {
-				found = true
-			}
-		}
-
-		if !found {
-			np.Spec.Ingress[0].From = append(np.Spec.Ingress[0].From, networkingv1.NetworkPolicyPeer{
-				NamespaceSelector: metav1.SetAsLabelSelector(labels.Set{constants.NamespaceLabelKey: namespace}),
-			})
-
-			updated = true
-		}
+	if isPeerMatchFromNamespaces(np.Spec.Ingress[0].From, namespaces) {
+		return false
 	}
 
-	return updated
+	np.Spec.Ingress[0].From = make([]networkingv1.NetworkPolicyPeer, 0)
+	for _, namespace := range namespaces {
+		np.Spec.Ingress[0].From = append(np.Spec.Ingress[0].From, networkingv1.NetworkPolicyPeer{
+			NamespaceSelector: metav1.SetAsLabelSelector(labels.Set{constants.NamespaceLabelKey: namespace}),
+		})
+	}
+
+	return true
 }
 
 func (r *Reconciliation) newNamespaceNetworkPolicy(namespace string, from []string) *networkingv1.NetworkPolicy {
@@ -270,10 +261,8 @@ func (r *Reconciliation) getNetworkPolicySpecifiedFromNamespaces() ([]string, er
 }
 
 func (r *Reconciliation) EnsureNetworkPolicyProcessed() (reconcile.Result, error) {
-	workspaceName := r.obj.GetLabels()[constants.WorkspaceLabelKey]
-
 	// get specified targetNamespaces
-	targetNamespaces, err := r.getWorkspaceNamespaces(workspaceName, r.obj.Spec.NamespaceSelector.DeepCopy())
+	targetNamespaces, err := r.getWorkspaceNamespaces(r.obj.Spec.Workspace, r.obj.Spec.NamespaceSelector.DeepCopy())
 	if err != nil {
 		if errors.IsBadRequest(err) {
 			return reconcile.Stop()
