@@ -3,7 +3,7 @@ package core
 import (
 	"context"
 	"encoding/json"
-	"github.com/fearlesschenc/phoenix-operator/pkg/constants"
+	"github.com/fearlesschenc/kubesphere/pkg/constants"
 	"github.com/fearlesschenc/phoenix-operator/pkg/schedule"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"

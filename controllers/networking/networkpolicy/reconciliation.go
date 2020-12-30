@@ -2,12 +2,12 @@ package networkpolicy
 
 import (
 	"context"
+	"github.com/fearlesschenc/kubesphere/pkg/constants"
 	networkingv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/networking/v1alpha1"
 	"github.com/fearlesschenc/phoenix-operator/controllers/networking/networkpolicy/finalize"
 	"github.com/fearlesschenc/phoenix-operator/controllers/networking/networkpolicy/initialize"
 	"github.com/fearlesschenc/phoenix-operator/controllers/networking/networkpolicy/status"
 	"github.com/fearlesschenc/phoenix-operator/controllers/networking/networkpolicy/validate"
-	"github.com/fearlesschenc/phoenix-operator/pkg/constants"
 	"github.com/fearlesschenc/phoenix-operator/pkg/reconcile"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
@@ -20,6 +20,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sort"
 )
+
+const SystemWorkspaceName = "system-workspace"
 
 type Reconciliation struct {
 	initialize.Initializer
@@ -217,7 +219,7 @@ func (r *Reconciliation) addSystemWorkspaceNamespace(namespaces []string) ([]str
 			{
 				Key:      constants.WorkspaceLabelKey,
 				Operator: metav1.LabelSelectorOpIn,
-				Values:   []string{constants.SystemWorkspaceName},
+				Values:   []string{SystemWorkspaceName},
 			},
 		},
 	})

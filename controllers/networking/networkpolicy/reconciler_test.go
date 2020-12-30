@@ -2,12 +2,12 @@ package networkpolicy
 
 import (
 	"context"
-	"github.com/docker/docker/client"
+	"github.com/fearlesschenc/kubesphere/pkg/constants"
 	networkingv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/networking/v1alpha1"
-	"github.com/fearlesschenc/phoenix-operator/pkg/constants"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	networkingv1 "k8s.io/api/networking/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
@@ -45,7 +45,7 @@ var _ = Describe("Network Policy Reconcile Sanity", func() {
 
 		policies := &networkingv1.NetworkPolicyList{}
 		Eventually(func() bool {
-			if err := k8sClient.Get(ctx, types.NamespacedName{Name: policy.Name}, policy); !client.IsErrNotFound(err) {
+			if err := k8sClient.Get(ctx, types.NamespacedName{Name: policy.Name}, policy); !errors.IsNotFound(err) {
 				return false
 			}
 
