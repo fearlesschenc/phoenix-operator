@@ -2,6 +2,7 @@ package finalize
 
 import (
 	"context"
+	"github.com/fearlesschenc/phoenix-operator/apis/tenant"
 	tenantv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/tenant/v1alpha1"
 	"github.com/fearlesschenc/phoenix-operator/pkg/reconcile"
 	"github.com/fearlesschenc/phoenix-operator/pkg/schedule"
@@ -17,7 +18,7 @@ type finalizer struct {
 	client client.Client
 }
 
-func (f *finalizer) isWorkspaceClaimBeingDeleted() bool {
+func (f *finalizer) isBeingDeleted() bool {
 	return !f.obj.ObjectMeta.DeletionTimestamp.IsZero()
 }
 
@@ -40,8 +41,8 @@ func (f *finalizer) finalizeWorkspaceClaim() (bool, error) {
 	return changed, nil
 }
 
-func (f *finalizer) EnsureWorkspaceClaimFinalized() (reconcile.Result, error) {
-	if !f.isWorkspaceClaimBeingDeleted() {
+func (f *finalizer) EnsureFinalized() (reconcile.Result, error) {
+	if !f.isBeingDeleted() {
 		return reconcile.Continue()
 	}
 
@@ -54,7 +55,7 @@ func (f *finalizer) EnsureWorkspaceClaimFinalized() (reconcile.Result, error) {
 		}
 	}
 
-	controllerutil.RemoveFinalizer(f.obj, tenantv1alpha1.WorkspaceClaimFinalizer)
+	controllerutil.RemoveFinalizer(f.obj, tenant.Finalizer)
 	if err := f.client.Update(context.TODO(), f.obj); err != nil {
 		return reconcile.RequeueWithError(err)
 	}

@@ -25,11 +25,10 @@ type Reconciliation struct {
 	status.Updater
 	validate.Validator
 
-	client          client.Client
-	log             logr.Logger
-	scheme          *runtime.Scheme
-	obj             *tenantv1alpha1.WorkspaceClaim
-	workspaceTaints []corev1.Taint
+	client client.Client
+	log    logr.Logger
+	scheme *runtime.Scheme
+	obj    *tenantv1alpha1.WorkspaceClaim
 }
 
 func newReconciliation(client client.Client, logger logr.Logger, scheme *runtime.Scheme, obj *tenantv1alpha1.WorkspaceClaim) *Reconciliation {
@@ -52,7 +51,7 @@ type NodePossessionStatus struct {
 	possessed bool
 }
 
-func (r *Reconciliation) EnsureWorkspaceClaimPossessionProcessed() (reconcile.Result, error) {
+func (r *Reconciliation) EnsurePossessionProcessed() (reconcile.Result, error) {
 	nodeList := &corev1.NodeList{}
 	if err := r.client.List(context.TODO(), nodeList); err != nil {
 		return reconcile.RequeueWithError(err)

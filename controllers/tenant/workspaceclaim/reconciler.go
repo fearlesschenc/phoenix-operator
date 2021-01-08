@@ -58,10 +58,10 @@ func (r *Reconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	reconciliation := newReconciliation(r.Client, logger, r.Scheme, claim)
 	return reconcile.RunReconcileRoutine([]reconcile.SubroutineFunc{
 		reconciliation.EnsureInitialized,
-		reconciliation.EnsureWorkspaceClaimValidated,
+		reconciliation.EnsureValidated,
 		reconciliation.UpdateStatus,
-		reconciliation.EnsureWorkspaceClaimFinalized,
-		reconciliation.EnsureWorkspaceClaimPossessionProcessed,
+		reconciliation.EnsureFinalized,
+		reconciliation.EnsurePossessionProcessed,
 	})
 }
 

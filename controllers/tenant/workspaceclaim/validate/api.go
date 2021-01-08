@@ -6,7 +6,7 @@ import (
 )
 
 type Validator interface {
-	EnsureWorkspaceClaimValidated() (reconcile.Result, error)
+	EnsureValidated() (reconcile.Result, error)
 }
 
 func NewValidator(obj *tenantv1alpha1.WorkspaceClaim) Validator {

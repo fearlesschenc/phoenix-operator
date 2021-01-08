@@ -71,5 +71,4 @@ func init() {
 	SchemeBuilder.Register(&WorkspaceClaim{}, &WorkspaceClaimList{})
 }
 
-const WorkspaceClaimFinalizer = "workspaceclaim.finalizer.kubesphere.io"
 const WorkspaceClaimOwnerKey = ".meta.controller"

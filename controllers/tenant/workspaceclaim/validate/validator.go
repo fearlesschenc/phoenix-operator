@@ -9,7 +9,7 @@ type validator struct {
 	obj *tenantv1alpha1.WorkspaceClaim
 }
 
-func (v *validator) EnsureWorkspaceClaimValidated() (reconcile.Result, error) {
+func (v *validator) EnsureValidated() (reconcile.Result, error) {
 	if v.obj.Name != v.obj.Spec.WorkspaceRef.Name {
 		return reconcile.Stop()
 	}
