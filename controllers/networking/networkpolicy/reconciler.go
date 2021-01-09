@@ -57,7 +57,7 @@ func (r *Reconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	reconciliation := newReconciliation(r.Client, logger, r.Scheme, policy)
 	return reconcile.RunReconcileRoutine([]reconcile.SubroutineFunc{
-		reconciliation.EnsureNetworkPolicyValidated,
+		reconciliation.EnsureValidated,
 		reconciliation.EnsureInitialized,
 		reconciliation.UpdateStatus,
 		reconciliation.EnsureNetworkPolicyFinalized,

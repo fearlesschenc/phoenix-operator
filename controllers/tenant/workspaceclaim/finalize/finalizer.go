@@ -2,10 +2,10 @@ package finalize
 
 import (
 	"context"
-	"github.com/fearlesschenc/phoenix-operator/apis/tenant"
 	tenantv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/tenant/v1alpha1"
 	"github.com/fearlesschenc/phoenix-operator/pkg/reconcile"
 	"github.com/fearlesschenc/phoenix-operator/pkg/schedule"
+	"github.com/fearlesschenc/phoenix-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -55,7 +55,7 @@ func (f *finalizer) EnsureFinalized() (reconcile.Result, error) {
 		}
 	}
 
-	controllerutil.RemoveFinalizer(f.obj, tenant.Finalizer)
+	controllerutil.RemoveFinalizer(f.obj, utils.TenantFinalizer)
 	if err := f.client.Update(context.TODO(), f.obj); err != nil {
 		return reconcile.RequeueWithError(err)
 	}

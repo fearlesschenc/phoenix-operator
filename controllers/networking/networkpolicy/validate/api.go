@@ -6,7 +6,7 @@ import (
 )
 
 type Validator interface {
-	EnsureNetworkPolicyValidated() (reconcile.Result, error)
+	EnsureValidated() (reconcile.Result, error)
 }
 
 func NewValidator(obj *networkingv1alpha1.NetworkPolicy) Validator {

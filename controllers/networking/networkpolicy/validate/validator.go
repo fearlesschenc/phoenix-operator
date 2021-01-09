@@ -9,6 +9,6 @@ type validator struct {
 	obj *networkingv1alpha1.NetworkPolicy
 }
 
-func (v *validator) EnsureNetworkPolicyValidated() (reconcile.Result, error) {
+func (v *validator) EnsureValidated() (reconcile.Result, error) {
 	return reconcile.Continue()
 }

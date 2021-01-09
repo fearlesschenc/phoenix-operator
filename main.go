@@ -18,6 +18,8 @@ package main
 
 import (
 	"flag"
+	"github.com/fearlesschenc/phoenix-operator/controllers/core/namespace"
+	"github.com/fearlesschenc/phoenix-operator/controllers/tenant/workspace"
 	"os"
 
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -75,6 +77,24 @@ func main() {
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
+		os.Exit(1)
+	}
+
+	if err = (&workspace.Reconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("workspace"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Workspace")
+		os.Exit(1)
+	}
+
+	if err = (&namespace.Reconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("namespace"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Namespace")
 		os.Exit(1)
 	}
 

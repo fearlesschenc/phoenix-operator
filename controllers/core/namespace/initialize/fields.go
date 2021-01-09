@@ -2,15 +2,15 @@ package initialize
 
 import (
 	"context"
-	networkingv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/networking/v1alpha1"
 	"github.com/fearlesschenc/phoenix-operator/pkg/reconcile"
+	corev1 "k8s.io/api/core/v1"
 )
 
-func (init *initializer) initializeFields(obj *networkingv1alpha1.NetworkPolicy) reconcile.ObjectState {
+func (init *initializer) initializeFields(obj *corev1.Namespace) reconcile.ObjectState {
 	objState := reconcile.ObjectUnchanged
 
-	if obj.Status.NetworkPolicyRefs == nil {
-		obj.Status.NetworkPolicyRefs = make([]networkingv1alpha1.NetworkPolicyRef, 0)
+	if obj.Labels == nil {
+		obj.Labels = make(map[string]string)
 		objState = reconcile.ObjectChanged
 	}
 

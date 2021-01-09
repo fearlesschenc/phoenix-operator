@@ -3,8 +3,8 @@ package finalize
 import (
 	"context"
 	tenantv1alpha1 "github.com/fearlesschenc/kubesphere/pkg/apis/tenant/v1alpha1"
-	"github.com/fearlesschenc/phoenix-operator/apis/tenant"
 	"github.com/fearlesschenc/phoenix-operator/pkg/reconcile"
+	"github.com/fearlesschenc/phoenix-operator/pkg/utils"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
@@ -23,7 +23,7 @@ func (f *finalizer) EnsureFinalized() (reconcile.Result, error) {
 		return reconcile.Continue()
 	}
 
-	controllerutil.RemoveFinalizer(f.obj, tenant.Finalizer)
+	controllerutil.RemoveFinalizer(f.obj, utils.TenantFinalizer)
 	if err := f.client.Update(context.TODO(), f.obj); err != nil {
 		return reconcile.RequeueWithError(err)
 	}
