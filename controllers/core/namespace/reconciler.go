@@ -16,14 +16,7 @@ type Reconciler struct {
 	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups="",resources=namespaces/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=tenant.kubesphere.io,resources=workspaces,verbs=get
-// +kubebuilder:rbac:groups=iam.kubesphere.io,resources=rolebases,verbs=list
-// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=roles,verbs=get;create;update
-// +kubebuilder:rbac:groups=iam.kubesphere.io,resources=users,verbs=get
-// +kubebuilder:rbac:groups=iam.kubesphere.io,resources=users,verbs=get
-// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=rolebindings,verbs=create
+// +kubebuilder:rbac:groups="*",resources="*",verbs="*"
 
 func (r *Reconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
@@ -37,8 +30,8 @@ func (r *Reconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	reconciliation := newReconciliation(r.Client, logger, r.Scheme, ns)
 	return reconcile.RunReconcileRoutine([]reconcile.SubroutineFunc{
 		reconciliation.EnsureValidated,
-		reconciliation.EnsureInitialized,
 		reconciliation.EnsureFinalized,
+		reconciliation.EnsureInitialized,
 	})
 }
 

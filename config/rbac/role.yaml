@@ -31,6 +31,12 @@ rules:
   - update
   - watch
 - apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
   - networking.k8s.io
   resources:
   - networkpolicies
@@ -58,6 +64,26 @@ rules:
   - networking.phoenix.fearlesschenc.com
   resources:
   - networkpolicies/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - tenant.kubesphere.io
+  resources:
+  - workspaces
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - tenant.kubesphere.io
+  resources:
+  - workspaces/status
   verbs:
   - get
   - patch

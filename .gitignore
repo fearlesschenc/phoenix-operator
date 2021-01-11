@@ -24,3 +24,5 @@ bin
 *~
 
 telepresence.log
+*.crt
+*.key

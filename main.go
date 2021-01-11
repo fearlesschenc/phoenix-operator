@@ -36,6 +36,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	ksiamv1alpha2 "github.com/fearlesschenc/kubesphere/pkg/apis/iam/v1alpha2"
+	kstenantv1alpha1 "github.com/fearlesschenc/kubesphere/pkg/apis/tenant/v1alpha1"
 	networkingv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/networking/v1alpha1"
 	tenantv1alpha1 "github.com/fearlesschenc/phoenix-operator/apis/tenant/v1alpha1"
 	// +kubebuilder:scaffold:imports
@@ -51,6 +53,8 @@ func init() {
 
 	utilruntime.Must(tenantv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(networkingv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(kstenantv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(ksiamv1alpha2.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -67,7 +71,7 @@ func main() {
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		// For Debug
-		//CertDir: "/tmp/phoenix-operator/k8s-webhook-server/serving-certs",
+		//CertDir: "/Users/chenchen/Dev/public/phoenix/phoenix-operator",
 
 		Scheme:             scheme,
 		MetricsBindAddress: metricsAddr,
